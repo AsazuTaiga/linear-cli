@@ -7,7 +7,6 @@ import { StatusBadge } from './StatusBadge.js';
 import { PriorityBadge } from './PriorityBadge.js';
 
 export const CycleIssues: React.FC = () => {
-  const { exit } = useApp();
   const [issues, setIssues] = useState<any[]>([]);
   const [cycleName, setCycleName] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -18,8 +17,6 @@ export const CycleIssues: React.FC = () => {
     if (input === 'q' || key.escape) {
       if (selectedIssue) {
         setSelectedIssue(null);
-      } else {
-        exit();
       }
     }
   });

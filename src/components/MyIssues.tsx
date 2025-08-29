@@ -11,7 +11,6 @@ interface MyIssuesProps {
 }
 
 export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
-  const { exit } = useApp();
   const [issues, setIssues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +21,6 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
     if (input === 'q' || key.escape) {
       if (selectedIssue) {
         setSelectedIssue(null);
-      } else {
-        exit();
       }
     }
   });

@@ -30,6 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "eslint": "^9.9.0",
+    "react-devtools-core": "^6.1.5",
     "typescript": "^5.5.4"
   }
 }

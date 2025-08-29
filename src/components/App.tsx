@@ -10,7 +10,11 @@ export const App: React.FC = () => {
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
-      exit();
+      if (selectedAction) {
+        setSelectedAction(null);
+      } else {
+        exit();
+      }
     }
   });
 
