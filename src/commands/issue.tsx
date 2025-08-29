@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import React from 'react';
 import { render } from 'ink';
-import { IssueList } from '../components/IssueList.js';
+// import { IssueList } from '../components/IssueList.js';
 import { linearClient } from '../services/linear.js';
 
 export const issueCommand = new Command('issue')
@@ -20,7 +20,8 @@ issueCommand
       process.exit(1);
     }
 
-    render(<IssueList options={options} />);
+    // render(<IssueList options={options} />);
+    console.log('Issue list機能は準備中です');
   });
 
 issueCommand

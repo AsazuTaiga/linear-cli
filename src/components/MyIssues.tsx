@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
-import { formatIssueLabel, getStatusColor, getPriorityLabel } from '../utils/format.js';
+import { IssueList } from './IssueListView.js';
+import { StatusBadge } from './StatusBadge.js';
+import { PriorityBadge } from './PriorityBadge.js';
 
 interface MyIssuesProps {
   mode: 'current-cycle' | 'all';
@@ -72,17 +73,16 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
   }
 
   if (selectedIssue) {
-    const statusColor = getStatusColor(selectedIssue.state?.name || '');
     return (
       <Box flexDirection="column" paddingY={1}>
         <Text bold color="cyan">{selectedIssue.identifier}: {selectedIssue.title}</Text>
-        <Box marginTop={1}>
-          <Text>
-            ステータス: <Text color={statusColor}>{selectedIssue.state?.name || '不明'}</Text>
-          </Text>
+        <Box marginTop={1} gap={1}>
+          <Text>ステータス:</Text>
+          <StatusBadge status={selectedIssue.state?.name || '不明'} />
         </Box>
-        <Box marginTop={1}>
-          <Text>優先度: {getPriorityLabel(selectedIssue.priority)}</Text>
+        <Box marginTop={1} gap={1}>
+          <Text>優先度:</Text>
+          <PriorityBadge priority={selectedIssue.priority} />
         </Box>
         {selectedIssue.assignee && (
           <Box marginTop={1}>
@@ -119,13 +119,8 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
     );
   }
 
-  const items = issues.map((issue) => ({
-    label: formatIssueLabel(issue),
-    value: issue,
-  }));
-
-  const handleSelect = (item: { value: any }) => {
-    setSelectedIssue(item.value);
+  const handleSelect = (issue: any) => {
+    setSelectedIssue(issue);
   };
 
   return (
@@ -139,7 +134,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
       </Box>
       <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
       <Box marginTop={1}>
-        <SelectInput items={items} onSelect={handleSelect} />
+        <IssueList issues={issues} onSelect={handleSelect} />
       </Box>
     </Box>
   );

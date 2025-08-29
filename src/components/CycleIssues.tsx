@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text, useApp, useInput } from 'ink';
-import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
-import { formatIssueLabel, getStatusColor, getPriorityLabel } from '../utils/format.js';
+import { IssueList } from './IssueListView.js';
+import { StatusBadge } from './StatusBadge.js';
+import { PriorityBadge } from './PriorityBadge.js';
 
 export const CycleIssues: React.FC = () => {
   const { exit } = useApp();
@@ -96,16 +97,8 @@ export const CycleIssues: React.FC = () => {
     );
   }
 
-  const items = issues.map((issue) => {
-    const assignee = issue.assignee?.displayName || issue.assignee?.name || '未割当';
-    return {
-      label: `${formatIssueLabel(issue)} [${assignee}]`,
-      value: issue,
-    };
-  });
-
-  const handleSelect = (item: { value: any }) => {
-    setSelectedIssue(item.value);
+  const handleSelect = (issue: any) => {
+    setSelectedIssue(issue);
   };
 
   return (
@@ -117,7 +110,7 @@ export const CycleIssues: React.FC = () => {
       </Box>
       <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
       <Box marginTop={1}>
-        <SelectInput items={items} onSelect={handleSelect} />
+        <IssueList issues={issues} onSelect={handleSelect} showAssignee={true} />
       </Box>
     </Box>
   );
