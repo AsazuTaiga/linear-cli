@@ -57,7 +57,22 @@ class LinearService {
       includeArchived: false,
     });
 
-    return issues.nodes;
+    // ステータス情報を含めて取得
+    const issuesWithDetails = await Promise.all(
+      issues.nodes.map(async (issue) => {
+        const state = await issue.state;
+        const assignee = await issue.assignee;
+        const cycle = await issue.cycle;
+        return {
+          ...issue,
+          state,
+          assignee,
+          cycle,
+        };
+      })
+    );
+
+    return issuesWithDetails;
   }
 
   async createIssue(data: {
@@ -110,13 +125,28 @@ class LinearService {
         filter.cycle = { id: { eq: currentCycle.id } };
       }
     }
-
+    
     const issues = await client.issues({
       filter,
       includeArchived: false,
     });
 
-    return issues.nodes;
+    // ステータス情報を含めて取得
+    const issuesWithDetails = await Promise.all(
+      issues.nodes.map(async (issue) => {
+        const state = await issue.state;
+        const assignee = await issue.assignee;
+        const cycle = await issue.cycle;
+        return {
+          ...issue,
+          state,
+          assignee,
+          cycle,
+        };
+      })
+    );
+
+    return issuesWithDetails;
   }
 
   async getCurrentCycle() {
@@ -127,25 +157,25 @@ class LinearService {
 
     const config = await configService.getConfig();
     const teamId = config.defaultTeamId;
+    
+    // 現在の日付を取得
+    const now = new Date();
 
     if (!teamId) {
       const teams = await client.teams();
       if (teams.nodes.length > 0) {
         const team = teams.nodes[0];
-        const cycles = await team.cycles({
-          filter: { isActive: { eq: true } }
-        });
-        return cycles.nodes[0];
+        // activeCycleを使用
+        const cycles = await team.activeCycle;
+        return cycles;
       }
       return null;
     }
 
     const team = await client.team(teamId);
-    const cycles = await team.cycles({
-      filter: { isActive: { eq: true } }
-    });
-    
-    return cycles.nodes[0];
+    // activeCycleを使用
+    const cycle = await team.activeCycle;
+    return cycle;
   }
 
   async getCycleIssues() {
@@ -177,6 +207,16 @@ class LinearService {
 
     const searchResults = await client.searchIssues(query);
     return searchResults.nodes;
+  }
+
+  async getTeams() {
+    const client = await this.getClient();
+    if (!client) {
+      throw new Error('Linear client not initialized');
+    }
+
+    const teams = await client.teams();
+    return teams.nodes;
   }
 }
 

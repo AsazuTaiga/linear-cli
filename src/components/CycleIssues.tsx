@@ -3,6 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
+import { formatIssueLabel, getStatusColor, getPriorityLabel } from '../utils/format.js';
 
 export const CycleIssues: React.FC = () => {
   const { exit } = useApp();
@@ -95,10 +96,13 @@ export const CycleIssues: React.FC = () => {
     );
   }
 
-  const items = issues.map((issue) => ({
-    label: `${issue.identifier} [${issue.assignee?.displayName || '未割当'}] ${issue.title}`,
-    value: issue,
-  }));
+  const items = issues.map((issue) => {
+    const assignee = issue.assignee?.displayName || issue.assignee?.name || '未割当';
+    return {
+      label: `${formatIssueLabel(issue)} [${assignee}]`,
+      value: issue,
+    };
+  });
 
   const handleSelect = (item: { value: any }) => {
     setSelectedIssue(item.value);

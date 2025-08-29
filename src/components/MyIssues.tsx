@@ -3,6 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
+import { formatIssueLabel, getStatusColor, getPriorityLabel } from '../utils/format.js';
 
 interface MyIssuesProps {
   mode: 'current-cycle' | 'all';
@@ -14,6 +15,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [cycleName, setCycleName] = useState<string>('');
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
@@ -31,6 +33,12 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
 
   const loadIssues = async () => {
     try {
+      if (mode === 'current-cycle') {
+        const currentCycle = await linearClient.getCurrentCycle();
+        if (currentCycle) {
+          setCycleName(currentCycle.name || currentCycle.number?.toString() || '');
+        }
+      }
       const fetchedIssues = await linearClient.getMyIssues({
         inCurrentCycle: mode === 'current-cycle',
         includeCompleted: false,
@@ -64,18 +72,31 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
   }
 
   if (selectedIssue) {
+    const statusColor = getStatusColor(selectedIssue.state?.name || '');
     return (
       <Box flexDirection="column" paddingY={1}>
         <Text bold color="cyan">{selectedIssue.identifier}: {selectedIssue.title}</Text>
         <Box marginTop={1}>
-          <Text>ステータス: {selectedIssue.state?.name || '不明'}</Text>
+          <Text>
+            ステータス: <Text color={statusColor}>{selectedIssue.state?.name || '不明'}</Text>
+          </Text>
         </Box>
         <Box marginTop={1}>
-          <Text>優先度: {selectedIssue.priority || '未設定'}</Text>
+          <Text>優先度: {getPriorityLabel(selectedIssue.priority)}</Text>
         </Box>
+        {selectedIssue.assignee && (
+          <Box marginTop={1}>
+            <Text>担当者: {selectedIssue.assignee.displayName || selectedIssue.assignee.name}</Text>
+          </Box>
+        )}
         {selectedIssue.description && (
           <Box marginTop={1}>
-            <Text>{selectedIssue.description}</Text>
+            <Text wrap="wrap">{selectedIssue.description}</Text>
+          </Box>
+        )}
+        {selectedIssue.url && (
+          <Box marginTop={1}>
+            <Text dimColor>URL: {selectedIssue.url}</Text>
           </Box>
         )}
         <Box marginTop={2}>
@@ -99,7 +120,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
   }
 
   const items = issues.map((issue) => ({
-    label: `${issue.identifier} [${issue.state?.name || '?'}] ${issue.title}`,
+    label: formatIssueLabel(issue),
     value: issue,
   }));
 
@@ -111,7 +132,9 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode }) => {
     <Box flexDirection="column">
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          📋 {mode === 'current-cycle' ? '自分のIssue（現在のサイクル）' : '自分のすべてのIssue'} ({issues.length}件)
+          📋 {mode === 'current-cycle' 
+            ? `自分のIssue（${cycleName || '現在のサイクル'}）` 
+            : '自分のすべてのIssue'} ({issues.length}件)
         </Text>
       </Box>
       <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
