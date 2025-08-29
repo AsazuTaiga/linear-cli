@@ -44,3 +44,6 @@ Thumbs.db
 # Bun
 bun.lockb
 *.bun
+
+# Binary
+/linear

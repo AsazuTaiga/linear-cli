@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "linear": "./dist/cli.js"
+    "linear": "./src/cli.tsx"
   },
   "scripts": {
     "dev": "bun run --watch src/cli.tsx",
