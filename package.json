@@ -24,6 +24,7 @@
     "ink-spinner": "^5.0.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.21",
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",
     "@typescript-eslint/eslint-plugin": "^8.2.0",
