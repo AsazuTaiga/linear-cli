@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
 import { IssueList } from './IssueListView.js';
-import { IssueDetail } from './IssueDetail.js';
 import { StatusBadge } from './StatusBadge.js';
 import { PriorityBadge } from './PriorityBadge.js';
 
@@ -36,30 +35,29 @@ interface Issue {
     startsAt: string;
     endsAt: string;
   };
+  attachments?: {
+    nodes: Array<{
+      id: string;
+      title?: string;
+      url: string;
+      sourceType?: string;
+    }>;
+  };
 }
 
-export const CycleIssues: React.FC = () => {
+interface CycleIssuesProps {
+  onSelectIssue: (issue: Issue) => void;
+}
+
+export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [cycleName, setCycleName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
   const handleIssueSelect = (issue: Issue) => {
-    setSelectedIssue(issue);
+    onSelectIssue(issue);
   };
-
-  const handleBack = () => {
-    setSelectedIssue(null);
-  };
-
-  useInput((input, key) => {
-    if (input === 'q' || key.escape) {
-      if (selectedIssue) {
-        setSelectedIssue(null);
-      }
-    }
-  });
 
   useEffect(() => {
     loadIssues();
@@ -101,9 +99,6 @@ export const CycleIssues: React.FC = () => {
     );
   }
 
-  if (selectedIssue) {
-    return <IssueDetail issue={selectedIssue} onBack={handleBack} />;
-  }
 
   if (issues.length === 0) {
     return (

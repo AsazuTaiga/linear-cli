@@ -32,6 +32,14 @@ interface IssueNode {
     startsAt: string;
     endsAt: string;
   };
+  attachments?: {
+    nodes: Array<{
+      id: string;
+      title?: string;
+      url: string;
+      sourceType?: string;
+    }>;
+  };
 }
 
 interface IssuesResponse {
@@ -143,6 +151,14 @@ class LinearService {
               startsAt
               endsAt
             }
+            attachments {
+              nodes {
+                id
+                title
+                url
+                sourceType
+              }
+            }
           }
         }
       }
@@ -242,6 +258,14 @@ class LinearService {
               number
               startsAt
               endsAt
+            }
+            attachments {
+              nodes {
+                id
+                title
+                url
+                sourceType
+              }
             }
           }
         }
@@ -389,6 +413,14 @@ class LinearService {
               number
               startsAt
               endsAt
+            }
+            attachments {
+              nodes {
+                id
+                title
+                url
+                sourceType
+              }
             }
           }
         }

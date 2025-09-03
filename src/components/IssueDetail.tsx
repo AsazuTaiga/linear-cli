@@ -19,24 +19,36 @@ interface Issue {
   assignee?: {
     displayName: string;
   };
+  attachments?: {
+    nodes: Array<{
+      id: string;
+      title?: string;
+      url: string;
+      sourceType?: string;
+    }>;
+  };
 }
 
 interface IssueDetailProps {
   issue: Issue;
-  onBack: () => void;
 }
 
-export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
+export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
+  const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(null);
 
   useInput((input, key) => {
-    if (input === 'q' || key.escape) {
-      onBack();
-    } else if (input === 'c') {
+    if (input === 'c') {
       copyToClipboard();
     } else if (input === 'o') {
       openInBrowser();
+    } else if (/^[1-9]$/.test(input)) {
+      const index = parseInt(input, 10) - 1;
+      const links = getAllLinks();
+      if (index < links.length) {
+        openLink(links[index].url);
+      }
     }
   });
 
@@ -79,6 +91,48 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
     } catch (error) {
       // エラーは無視（ブラウザが開けない環境の場合）
     }
+  };
+
+  const openLink = async (url: string) => {
+    try {
+      await execAsync(`open "${url}"`);
+    } catch (error) {
+      // エラーは無視（ブラウザが開けない環境の場合）
+    }
+  };
+
+  const getAllLinks = () => {
+    const links: Array<{ title: string; url: string; type: string }> = [];
+    
+    // Linear Issue URLを最初に追加
+    links.push({
+      title: `${issue.identifier} (Linear)`,
+      url: issue.url,
+      type: 'linear'
+    });
+    
+    // Attachmentsを追加（GitHub PRなど）
+    if (issue.attachments?.nodes) {
+      issue.attachments.nodes.forEach(attachment => {
+        let title = attachment.title || 'リンク';
+        // GitHub PRの場合は特別な表記
+        if (attachment.sourceType === 'github' && attachment.url.includes('/pull/')) {
+          const prMatch = attachment.url.match(/pull\/(\d+)/);
+          if (prMatch) {
+            title = `PR #${prMatch[1]} (GitHub)`;
+          }
+        } else if (attachment.sourceType === 'github') {
+          title = `${title} (GitHub)`;
+        }
+        links.push({
+          title,
+          url: attachment.url,
+          type: attachment.sourceType || 'other'
+        });
+      });
+    }
+    
+    return links;
   };
 
   const formatIssueForClaude = (issue: Issue): string => {
@@ -132,9 +186,17 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
         </Box>
       )}
 
-      <Box marginTop={1} marginBottom={1}>
-        <Text dimColor>URL: </Text>
-        <Text color="blue">{issue.url}</Text>
+      <Box marginTop={1} marginBottom={1} flexDirection="column">
+        <Text bold dimColor>リンク:</Text>
+        {getAllLinks().map((link, index) => (
+          <Box key={index} paddingLeft={2}>
+            <Text color="cyan">[{index + 1}]</Text>
+            <Text> </Text>
+            <Text color={link.type === 'github' ? 'green' : 'blue'}>
+              {link.title}
+            </Text>
+          </Box>
+        ))}
       </Box>
 
       {copied && (
@@ -152,8 +214,9 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue, onBack }) => {
       <Box marginTop={2} flexDirection="column">
         <Text dimColor>操作:</Text>
         <Box paddingLeft={2} flexDirection="column">
+          <Text><Text color="cyan">1-9</Text> - リンクを開く</Text>
           <Text><Text color="cyan">c</Text> - クリップボードにコピー</Text>
-          <Text><Text color="cyan">o</Text> - ブラウザで開く</Text>
+          <Text><Text color="cyan">o</Text> - Linearで開く</Text>
           <Text><Text color="cyan">q/Esc</Text> - 戻る</Text>
         </Box>
       </Box>
