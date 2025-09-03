@@ -10,9 +10,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
 
   switch (statusLower) {
     case "todo":
-      return <Text color="white">◯</Text>;
+      return <Text color="white">⬤</Text>;
     case "backlog":
-      return <Text color="gray">ー</Text>;
+      return <Text color="gray">⬤</Text>;
     case "in_progress":
     case "in progress":
     case "inprogress":
@@ -28,6 +28,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
     case "cancelled":
       return <Text color="gray">⬤</Text>;
     default:
-      return <Text>{statusLower}</Text>;
+      return <Text>??</Text>;
   }
 };

@@ -16,8 +16,8 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
   
   // ターミナルの高さを取得し、表示可能な行数を計算
   const terminalHeight = stdout.rows || 20;
-  // ヘッダーやその他のUI要素のために余裕を持たせる
-  const maxVisibleItems = Math.max(5, terminalHeight - 10);
+  // ヘッダーやその他のUI要素のために余裕を持たせる（より保守的に）
+  const maxVisibleItems = Math.max(3, Math.min(terminalHeight - 8, 30));
   
   // 表示範囲を計算
   const visibleRange = useMemo(() => {

@@ -23,7 +23,7 @@ bun run test:coverage  # カバレッジ付きテスト
 
 # ビルド・デプロイ
 bun run build    # プロダクションビルド（dist/に出力）
-bun run install  # ビルド後、ローカル環境にCLIツールをインストール
+bun run link-local  # ビルド後、ローカル環境にCLIツールをインストール
 bun run start    # ビルド済みファイルを実行
 ```
 

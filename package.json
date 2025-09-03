@@ -9,7 +9,7 @@
     "dev": "bun run --watch src/cli.tsx",
     "build": "bun build src/cli.tsx --outdir dist --target node",
     "start": "bun run dist/cli.js",
-    "install": "bun run build && bun link",
+    "link-local": "bun run build && bun link",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest",

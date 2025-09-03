@@ -201,13 +201,10 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
         </Box>
       )}
 
-      <Box marginTop={2} flexDirection="column">
-        <Text dimColor>操作:</Text>
-        <Box paddingLeft={2} flexDirection="column">
-          <Text><Text color="cyan">1-9</Text> - リンクを開く</Text>
-          <Text><Text color="cyan">c</Text> - クリップボードにコピー</Text>
-          <Text><Text color="cyan">q/Esc</Text> - 戻る</Text>
-        </Box>
+      <Box marginTop={2}>
+        <Text dimColor>
+          [1-9] リンクを開く  [c] コピー  [q/Esc] 戻る
+        </Text>
       </Box>
     </Box>
   );

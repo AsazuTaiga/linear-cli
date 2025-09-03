@@ -7,19 +7,19 @@ interface PriorityBadgeProps {
 
 export const PriorityBadge: React.FC<PriorityBadgeProps> = ({ priority }) => {
   if (priority === undefined || priority === null) {
-    return null;
+    return <Text color="gray">{'No Priority'.padEnd(11)}</Text>;
   }
 
   switch (priority) {
     case 0:
-      return <Text color="red">Urgent</Text>;
+      return <Text color="red">{'Urgent'.padEnd(11)}</Text>;
     case 1:
-      return <Text color="orange">High</Text>;
+      return <Text color="orange">{'High'.padEnd(11)}</Text>;
     case 2:
-      return <Text color="yellow">Medium</Text>;
+      return <Text color="yellow">{'Medium'.padEnd(11)}</Text>;
     case 3:
-      return <Text color="blue">Low</Text>;
+      return <Text color="blue">{'Low'.padEnd(11)}</Text>;
     default:
-      return <Text color="gray">(No priorirty)</Text>;
+      return <Text color="gray">{'No Priority'.padEnd(11)}</Text>;
   }
 };

@@ -13,7 +13,7 @@ export const IssueItem: React.FC<IssueItemProps> = ({ issue, showAssignee = fals
   
   return (
     <Box gap={1}>
-      <Text>{issue.identifier}</Text>
+      <Text>{issue.identifier.padEnd(8)}</Text>
       <StatusBadge status={issue.state?.name || 'Unknown'} />
       <PriorityBadge priority={issue.priority} />
       <Text>{issue.title}</Text>

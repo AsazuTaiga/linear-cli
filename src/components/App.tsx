@@ -1,5 +1,5 @@
-import React, { useReducer, useEffect } from 'react';
-import { Box, Text, useInput, useApp, useStdout } from 'ink';
+import React, { useReducer } from 'react';
+import { Box, Text, useInput, useApp } from 'ink';
 import SelectInput from 'ink-select-input';
 import { MyIssues } from './MyIssues.js';
 import { CycleIssues } from './CycleIssues.js';
@@ -62,18 +62,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   const { exit } = useApp();
-  const { write } = useStdout();
   const [state, dispatch] = useReducer(appReducer, {
     currentView: defaultView as ViewType,
     previousView: 'menu',
     selectedIssue: null
   });
-
-  // 画面遷移時にクリア
-  useEffect(() => {
-    // 画面が切り替わった時に必ずクリア
-    write('\x1b[2J\x1b[H');
-  }, [state.currentView, write]);
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
@@ -115,7 +108,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   };
 
   return (
-    <Box flexDirection="column" paddingY={1} minHeight={20}>
+    <Box flexDirection="column" paddingY={1}>
       <Box marginBottom={1}>
         <Text bold color="cyan">
           🚀 Linear CLI
