@@ -1,6 +1,7 @@
-# 🚀 Linear CLI
+# 🚀 Linear CLI (Community Project)
 
 <div align="center">
+  <img src="https://img.shields.io/badge/Community-Project-green?style=for-the-badge" alt="Community Project">
   <img src="https://img.shields.io/badge/Built%20with-Bun-000000?style=for-the-badge&logo=bun&logoColor=white" alt="Built with Bun">
   <img src="https://img.shields.io/badge/React-Ink-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Ink">
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
@@ -9,7 +10,8 @@
 
 <div align="center">
   <h3>⚡ Fast and Interactive Linear Issue Management Tool</h3>
-  <p>Quickly view and manage Linear issues without leaving your terminal</p>
+  <p>A community-driven CLI tool to quickly view and manage Linear issues without leaving your terminal</p>
+  <p><strong>⚠️ Note: This is an unofficial community project and is not affiliated with Linear</strong></p>
 </div>
 
 ---
@@ -44,9 +46,21 @@
 
 ### Installation
 
+#### Install from npm
+
+```bash
+# Install globally with npm
+npm install -g @asazutaiga/linear-cli
+
+# Or with bun
+bun install -g @asazutaiga/linear-cli
+```
+
+#### Build from source
+
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/linear-cli.git
+git clone https://github.com/asazutaiga/linear-cli.git
 cd linear-cli
 
 # Install dependencies
@@ -149,6 +163,10 @@ Pull requests are welcome! For major changes, please open an issue first.
 ## 📝 License
 
 MIT License - See [LICENSE](LICENSE) file for details.
+
+## 📌 Disclaimer
+
+This is an **unofficial community project** and is not affiliated with, endorsed by, or supported by Linear. Linear is a trademark of Linear Orbit, Inc.
 
 ## 🙏 Acknowledgments
 

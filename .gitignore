@@ -47,3 +47,6 @@ bun.lockb
 
 # Binary
 /linear
+
+# Claude AI local settings (user-specific)
+.claude/settings.local.json

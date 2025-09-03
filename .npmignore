@@ -1,0 +1,36 @@
+# Source files (only distribute built files)
+src/
+scripts/
+
+# Development files
+.github/
+*.test.ts
+*.test.tsx
+__tests__/
+
+# Configuration files
+.gitignore
+.prettierrc
+biome.json
+bunfig.toml
+tsconfig.json
+vitest.config.ts
+CLAUDE.md
+PUBLISHING.md
+
+# Build artifacts
+*.log
+node_modules/
+.DS_Store
+bun.lockb
+
+# Development directories
+coverage/
+.vscode/
+.idea/
+.claude/
+
+# Binary builds
+/linear
+
+# Keep only dist/, README.md, LICENSE, and package.json

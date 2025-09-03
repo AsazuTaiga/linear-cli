@@ -1,10 +1,38 @@
 {
-  "name": "linear-cli",
+  "name": "@asazutaiga/linear-cli",
   "version": "0.1.0",
+  "description": "Fast and interactive Linear issue management CLI tool (Community Project)",
   "type": "module",
   "main": "./dist/cli.js",
   "bin": {
     "linear": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "linear",
+    "cli",
+    "issue-tracker",
+    "project-management",
+    "terminal",
+    "productivity"
+  ],
+  "author": "asazutaiga",
+  "license": "MIT",
+  "homepage": "https://github.com/asazutaiga/linear-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asazutaiga/linear-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/asazutaiga/linear-cli/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
   },
   "scripts": {
     "dev": "bun run --watch src/cli.tsx",
@@ -12,6 +40,8 @@
     "build:binary": "bun build ./src/cli.tsx --compile --outfile ./dist/linear",
     "start": "bun run dist/cli.js",
     "link-local": "bun run build && chmod +x ./dist/cli.js && bun link",
+    "prepublishOnly": "bun run check && bun run build",
+    "prepack": "bun run build",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint ./src",
     "format": "biome format --write ./src",
