@@ -108,13 +108,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   };
 
   return (
-    <Box flexDirection="column" paddingY={1}>
-      <Box marginBottom={1}>
-        <Text bold color="cyan">
-          🚀 Linear CLI
-        </Text>
-      </Box>
-      
+    <Box flexDirection="column">
       {state.currentView === 'menu' && (
         <>
           <Text dimColor>何をしますか？ (↑↓で選択、Enterで決定、qで終了)</Text>
