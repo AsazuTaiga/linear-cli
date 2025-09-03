@@ -1,13 +1,19 @@
 #!/usr/bin/env bun
 
+import { readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { render } from 'ink';
 import { configCommand } from './commands/config.js';
 import { App } from './components/App.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageJson = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8'));
+
 const program = new Command();
 
-program.name('linear').description('Linear CLI - Manage issues from the terminal').version('0.1.0');
+program.name('linear').description('Linear CLI - Manage issues from the terminal').version(packageJson.version);
 
 program.addCommand(configCommand);
 
