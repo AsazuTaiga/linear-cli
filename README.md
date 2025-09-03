@@ -16,31 +16,25 @@
 
 ## ✨ Features
 
-### 🎯 **Intuitive Interface**
-- **Interactive menus** - Easy navigation with arrow keys
-- **Smart list display** - Auto-sorted by priority and status
-- **Virtual scrolling** - Smooth display of large issue lists
+- 📋 **View Issues** - Browse your issues, team issues, or all issues
+- 🔍 **Search** - Find issues quickly with real-time search
+- ➕ **Create Issues** - Create new issues directly from terminal
+- 🔗 **GitHub Integration** - View linked PRs and open them instantly
+- ⚡ **Fast & Responsive** - Built with Bun for ultra-fast performance
+- 💾 **Smart Caching** - Instant navigation with intelligent cache
 
-### ⚡ **Fast Operations**
-- **Keyboard shortcuts** - `j/k` to scroll, number keys to open links
-- **Intelligent caching** - Instant screen transitions
-- **Bun runtime** - Ultra-fast startup and execution
+## 🚧 Roadmap
 
-### 🔗 **Seamless Integration**
-- **GitHub integration** - Auto-display PR information
-- **Clipboard support** - One-touch copy of issue info
-- **Browser integration** - Quickly open issues and PRs
-
-## 📸 Screenshot
-
-```
-📋 My Issues (Sprint 23) (5 items)
-Use ↑↓ to select, Enter to view details, q or Esc to go back
-
-❯ AME-1234  ⬤ High        Implement API endpoints
-  AME-1235  ⬤ Medium      Update documentation
-  AME-1236  ⬤ Low         Add test cases
-```
+- [ ] Edit existing issues
+- [ ] Add/view comments
+- [ ] Bulk operations (close, assign, label)
+- [ ] Project and milestone filtering
+- [ ] Custom views and saved filters
+- [ ] Time tracking integration
+- [ ] Slack notifications
+- [ ] Export to CSV/JSON
+- [ ] Offline mode with sync
+- [ ] Team performance analytics
 
 ## 🚀 Quick Start
 
@@ -77,92 +71,79 @@ linear config set-team
 ### Basic Commands
 
 ```bash
-# Show main menu (default: my current cycle issues)
+# Interactive menu
 linear
 
-# My current cycle issues
+# View my current cycle issues
 linear mine
 
-# All my issues
+# View all my issues
 linear mine-all
 
-# Team's current cycle issues
+# View team's current cycle issues
 linear cycle
+
+# Search issues
+linear search
+
+# Create new issue
+linear create
 ```
 
 ### Keyboard Shortcuts
 
-#### List View
-| Key | Action |
-|------|------|
-| `↑` / `k` | Move up |
-| `↓` / `j` | Move down |
-| `Enter` | Show details |
-| `q` / `Esc` | Back / Exit |
+#### Navigation
+- `↑`/`↓` or `j`/`k` - Navigate lists
+- `Enter` - Select/Open
+- `q` or `Esc` - Go back/Exit
 
-#### Detail View
-| Key | Action |
-|------|------|
-| `↑` / `k` | Scroll up |
-| `↓` / `j` | Scroll down |
-| `1-9` | Open corresponding link |
-| `c` | Copy issue info to clipboard |
-| `q` / `Esc` | Back to list |
+#### Issue Details
+- `1-9` - Open numbered links
+- `c` - Copy issue info to clipboard
+- `j`/`k` - Scroll content
 
 ## 🛠️ Development
 
-### Development Environment Setup
-
 ```bash
-# Development mode (with hot reload)
+# Development mode
 bun run dev
 
-# Type check
-bun run typecheck
-
-# Build
-bun run build
-
-# Test
+# Run tests
 bun run test
+
+# Type checking & linting
+bun run check
+
+# Build for production
+bun run build
 ```
 
 ### Project Structure
 
 ```
 src/
-├── cli.tsx              # Entry point
-├── components/          # UI components
-│   ├── App.tsx         # Main screen management
-│   ├── MyIssues.tsx    # My issues list
-│   ├── CycleIssues.tsx # Cycle issues list
-│   └── IssueDetail.tsx # Issue detail view
-├── services/           # Business logic
-│   ├── linear.ts       # Linear API integration
-│   └── config.ts       # Config management
-└── utils/              # Utilities
-    ├── format.ts       # Formatters
-    └── sort.ts         # Sort logic
+├── cli.tsx              # CLI entry point
+├── components/          # React Ink UI components
+├── services/           # Business logic & API
+└── utils/              # Utilities & helpers
 ```
 
 ## 🔧 Configuration
 
-Configuration file is saved at `~/.config/configstore/linear-cli.json`.
+Configuration is stored in `~/.config/configstore/linear-cli.json`
 
-### Available Settings
-
-- `linearApiToken` - Linear API token
-- `defaultTeamId` - Default team ID
-- `defaultProjectId` - Default project ID (optional)
+- `linearApiToken` - Your Linear API token
+- `defaultTeamId` - Default team for operations
+- `defaultProjectId` - Default project (optional)
 
 ## 🤝 Contributing
 
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome! For major changes, please open an issue first.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ## 📝 License
@@ -171,9 +152,9 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Linear](https://linear.app) - Amazing project management tool
+- [Linear](https://linear.app) - Project management platform
 - [Ink](https://github.com/vadimdemedes/ink) - React for CLIs
-- [Bun](https://bun.sh) - Fast JavaScript runtime
+- [Bun](https://bun.sh) - JavaScript runtime & toolkit
 
 ---
 
