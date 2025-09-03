@@ -41,8 +41,6 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
   useInput((input, key) => {
     if (input === 'c') {
       copyToClipboard();
-    } else if (input === 'o') {
-      openInBrowser();
     } else if (/^[1-9]$/.test(input)) {
       const index = parseInt(input, 10) - 1;
       const links = getAllLinks();
@@ -82,14 +80,6 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
       setTimeout(() => {
         setCopyError(null);
       }, 3000);
-    }
-  };
-
-  const openInBrowser = async () => {
-    try {
-      await execAsync(`open "${issue.url}"`);
-    } catch (error) {
-      // エラーは無視（ブラウザが開けない環境の場合）
     }
   };
 
@@ -216,7 +206,6 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
         <Box paddingLeft={2} flexDirection="column">
           <Text><Text color="cyan">1-9</Text> - リンクを開く</Text>
           <Text><Text color="cyan">c</Text> - クリップボードにコピー</Text>
-          <Text><Text color="cyan">o</Text> - Linearで開く</Text>
           <Text><Text color="cyan">q/Esc</Text> - 戻る</Text>
         </Box>
       </Box>
