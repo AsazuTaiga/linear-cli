@@ -1,7 +1,66 @@
-import { LinearClient } from '@linear/sdk';
+import { LinearClient, LinearGraphQLClient } from '@linear/sdk';
 import { configService } from './config.js';
+import { cacheService } from './cache.js';
+import { GraphQLQueryValidator, applyLinearDefaults } from './graphql-validator.js';
+
+interface IssueNode {
+  id: string;
+  identifier: string;
+  title: string;
+  description?: string;
+  priority?: number;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+  state: {
+    id: string;
+    name: string;
+    type: string;
+    color: string;
+  };
+  assignee?: {
+    id: string;
+    name: string;
+    displayName: string;
+    email: string;
+    avatarUrl?: string;
+  };
+  cycle?: {
+    id: string;
+    name: string;
+    number: number;
+    startsAt: string;
+    endsAt: string;
+  };
+}
+
+interface IssuesResponse {
+  issues: {
+    nodes: IssueNode[];
+  };
+}
+
+interface ViewerIssuesResponse {
+  viewer: {
+    id: string;
+  };
+  issues: {
+    nodes: IssueNode[];
+  };
+}
+
+interface Cycle {
+  id: string;
+  name: string;
+  number: number;
+  startsAt: string;
+  endsAt: string;
+}
 
 class LinearService {
+  private cycleCache: Cycle | null = null;
+  private cycleCacheTimestamp: number = 0;
+  private cycleCacheTTL = 10 * 60 * 1000; // 10分
   private client: LinearClient | null = null;
 
   async getClient(): Promise<LinearClient | null> {
@@ -32,13 +91,13 @@ class LinearService {
     status?: string;
     assigneeId?: string;
     projectId?: string;
-  }) {
+  }): Promise<IssueNode[]> {
     const client = await this.getClient();
     if (!client) {
       throw new Error('Linear client not initialized');
     }
 
-    const filter: any = {};
+    const filter: Record<string, any> = {};
     
     if (options?.status) {
       filter.state = { name: { eq: options.status } };
@@ -52,27 +111,60 @@ class LinearService {
       filter.project = { id: { eq: options.projectId } };
     }
 
-    const issues = await client.issues({
-      filter,
-      includeArchived: false,
+    const query = `
+      query GetIssues($filter: IssueFilter, $includeArchived: Boolean) {
+        issues(filter: $filter, includeArchived: $includeArchived) {
+          nodes {
+            id
+            identifier
+            title
+            description
+            priority
+            url
+            createdAt
+            updatedAt
+            state {
+              id
+              name
+              type
+              color
+            }
+            assignee {
+              id
+              name
+              displayName
+              email
+              avatarUrl
+            }
+            cycle {
+              id
+              name
+              number
+              startsAt
+              endsAt
+            }
+          }
+        }
+      }
+    `;
+
+    const graphQLClient: LinearGraphQLClient = client.client;
+    
+    // GraphQLパラメータの検証
+    const variables = applyLinearDefaults({ filter });
+    GraphQLQueryValidator.validate({
+      queryName: 'GetIssues',
+      queryString: query,
+      variables
     });
+    
+    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(query, variables);
 
-    // ステータス情報を含めて取得
-    const issuesWithDetails = await Promise.all(
-      issues.nodes.map(async (issue) => {
-        const state = await issue.state;
-        const assignee = await issue.assignee;
-        const cycle = await issue.cycle;
-        return {
-          ...issue,
-          state,
-          assignee,
-          cycle,
-        };
-      })
-    );
+    if (!response.data) {
+      throw new Error('Failed to fetch issues');
+    }
 
-    return issuesWithDetails;
+    return response.data.issues.nodes;
   }
 
   async createIssue(data: {
@@ -104,15 +196,61 @@ class LinearService {
   async getMyIssues(options?: {
     inCurrentCycle?: boolean;
     includeCompleted?: boolean;
-  }) {
+  }): Promise<IssueNode[]> {
+    const cacheKey = `my-issues-${options?.inCurrentCycle ? 'cycle' : 'all'}-${options?.includeCompleted ? 'with-completed' : 'no-completed'}`;
+    const cached = cacheService.get<IssueNode[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const client = await this.getClient();
     if (!client) {
       throw new Error('Linear client not initialized');
     }
 
-    const viewer = await client.viewer;
-    const filter: any = {
-      assignee: { id: { eq: viewer.id } },
+    const query = `
+      query GetMyIssues($filter: IssueFilter, $includeArchived: Boolean) {
+        viewer {
+          id
+        }
+        issues(filter: $filter, includeArchived: $includeArchived) {
+          nodes {
+            id
+            identifier
+            title
+            description
+            priority
+            url
+            createdAt
+            updatedAt
+            state {
+              id
+              name
+              type
+              color
+            }
+            assignee {
+              id
+              name
+              displayName
+              email
+              avatarUrl
+            }
+            cycle {
+              id
+              name
+              number
+              startsAt
+              endsAt
+            }
+          }
+        }
+      }
+    `;
+
+    const viewerResponse = await client.viewer;
+    const filter: Record<string, any> = {
+      assignee: { id: { eq: viewerResponse.id } },
     };
 
     if (!options?.includeCompleted) {
@@ -125,31 +263,35 @@ class LinearService {
         filter.cycle = { id: { eq: currentCycle.id } };
       }
     }
+
+    const graphQLClient: LinearGraphQLClient = client.client;
     
-    const issues = await client.issues({
-      filter,
-      includeArchived: false,
+    // GraphQLパラメータの検証
+    const variables = applyLinearDefaults({ filter });
+    GraphQLQueryValidator.validate({
+      queryName: 'GetMyIssues',
+      queryString: query,
+      variables
     });
+    
+    const response = await graphQLClient.rawRequest<ViewerIssuesResponse, Record<string, any>>(query, variables);
 
-    // ステータス情報を含めて取得
-    const issuesWithDetails = await Promise.all(
-      issues.nodes.map(async (issue) => {
-        const state = await issue.state;
-        const assignee = await issue.assignee;
-        const cycle = await issue.cycle;
-        return {
-          ...issue,
-          state,
-          assignee,
-          cycle,
-        };
-      })
-    );
+    if (!response.data) {
+      throw new Error('Failed to fetch issues');
+    }
 
-    return issuesWithDetails;
+    const issues = response.data.issues.nodes;
+    cacheService.set(cacheKey, issues);
+    return issues;
   }
 
-  async getCurrentCycle() {
+  async getCurrentCycle(): Promise<Cycle | null> {
+    const cacheKey = 'current-cycle';
+    const cached = cacheService.get<Cycle>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const client = await this.getClient();
     if (!client) {
       throw new Error('Linear client not initialized');
@@ -161,24 +303,51 @@ class LinearService {
     // 現在の日付を取得
     const now = new Date();
 
+    let cycle: Cycle | null = null;
     if (!teamId) {
       const teams = await client.teams();
       if (teams.nodes.length > 0) {
         const team = teams.nodes[0];
         // activeCycleを使用
-        const cycles = await team.activeCycle;
-        return cycles;
+        const activeCycle = await team.activeCycle;
+        if (activeCycle) {
+          cycle = {
+            id: activeCycle.id,
+            name: activeCycle.name || '',
+            number: activeCycle.number,
+            startsAt: activeCycle.startsAt instanceof Date ? activeCycle.startsAt.toISOString() : activeCycle.startsAt,
+            endsAt: activeCycle.endsAt instanceof Date ? activeCycle.endsAt.toISOString() : activeCycle.endsAt,
+          };
+        }
       }
-      return null;
+    } else {
+      const team = await client.team(teamId);
+      // activeCycleを使用
+      const activeCycle = await team.activeCycle;
+      if (activeCycle) {
+        cycle = {
+          id: activeCycle.id,
+          name: activeCycle.name || '',
+          number: activeCycle.number,
+          startsAt: activeCycle.startsAt instanceof Date ? activeCycle.startsAt.toISOString() : activeCycle.startsAt,
+          endsAt: activeCycle.endsAt instanceof Date ? activeCycle.endsAt.toISOString() : activeCycle.endsAt,
+        };
+      }
     }
 
-    const team = await client.team(teamId);
-    // activeCycleを使用
-    const cycle = await team.activeCycle;
+    if (cycle) {
+      cacheService.set(cacheKey, cycle, 10 * 60 * 1000); // 10分キャッシュ
+    }
     return cycle;
   }
 
-  async getCycleIssues() {
+  async getCycleIssues(): Promise<IssueNode[]> {
+    const cacheKey = 'cycle-issues';
+    const cached = cacheService.get<IssueNode[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const client = await this.getClient();
     if (!client) {
       throw new Error('Linear client not initialized');
@@ -189,14 +358,66 @@ class LinearService {
       return [];
     }
 
-    const issues = await client.issues({
+    const query = `
+      query GetCycleIssues($filter: IssueFilter, $includeArchived: Boolean) {
+        issues(filter: $filter, includeArchived: $includeArchived) {
+          nodes {
+            id
+            identifier
+            title
+            description
+            priority
+            url
+            createdAt
+            updatedAt
+            state {
+              id
+              name
+              type
+              color
+            }
+            assignee {
+              id
+              name
+              displayName
+              email
+              avatarUrl
+            }
+            cycle {
+              id
+              name
+              number
+              startsAt
+              endsAt
+            }
+          }
+        }
+      }
+    `;
+
+    const graphQLClient: LinearGraphQLClient = client.client;
+    
+    // GraphQLパラメータの検証
+    const variables = applyLinearDefaults({
       filter: {
         cycle: { id: { eq: currentCycle.id } }
-      },
-      includeArchived: false,
+      }
     });
+    GraphQLQueryValidator.validate({
+      queryName: 'GetCycleIssues',
+      queryString: query,
+      variables
+    });
+    
+    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(query, variables);
 
-    return issues.nodes;
+    if (!response.data) {
+      throw new Error('Failed to fetch cycle issues');
+    }
+
+    const issues = response.data.issues.nodes;
+    cacheService.set(cacheKey, issues);
+    return issues;
   }
 
   async searchIssues(query: string) {

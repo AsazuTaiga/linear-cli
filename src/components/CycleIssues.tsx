@@ -3,15 +3,55 @@ import { Box, Text, useApp, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import { linearClient } from '../services/linear.js';
 import { IssueList } from './IssueListView.js';
+import { IssueDetail } from './IssueDetail.js';
 import { StatusBadge } from './StatusBadge.js';
 import { PriorityBadge } from './PriorityBadge.js';
 
+interface Issue {
+  id: string;
+  identifier: string;
+  title: string;
+  description?: string;
+  priority?: number;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+  state: {
+    id: string;
+    name: string;
+    type: string;
+    color: string;
+  };
+  assignee?: {
+    id: string;
+    name: string;
+    displayName: string;
+    email: string;
+    avatarUrl?: string;
+  };
+  cycle?: {
+    id: string;
+    name: string;
+    number: number;
+    startsAt: string;
+    endsAt: string;
+  };
+}
+
 export const CycleIssues: React.FC = () => {
-  const [issues, setIssues] = useState<any[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [cycleName, setCycleName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+
+  const handleIssueSelect = (issue: Issue) => {
+    setSelectedIssue(issue);
+  };
+
+  const handleBack = () => {
+    setSelectedIssue(null);
+  };
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
@@ -27,11 +67,12 @@ export const CycleIssues: React.FC = () => {
 
   const loadIssues = async () => {
     try {
-      const currentCycle = await linearClient.getCurrentCycle();
-      if (currentCycle) {
-        setCycleName(currentCycle.name || currentCycle.number?.toString() || '現在のサイクル');
-      }
       const fetchedIssues = await linearClient.getCycleIssues();
+      
+      if (fetchedIssues.length > 0 && fetchedIssues[0].cycle) {
+        setCycleName(fetchedIssues[0].cycle.name || fetchedIssues[0].cycle.number?.toString() || '現在のサイクル');
+      }
+      
       setIssues(fetchedIssues);
     } catch (err) {
       setError(err instanceof Error ? err.message : '不明なエラー');
@@ -61,28 +102,7 @@ export const CycleIssues: React.FC = () => {
   }
 
   if (selectedIssue) {
-    return (
-      <Box flexDirection="column" paddingY={1}>
-        <Text bold color="cyan">{selectedIssue.identifier}: {selectedIssue.title}</Text>
-        <Box marginTop={1}>
-          <Text>担当者: {selectedIssue.assignee?.displayName || '未割当'}</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text>ステータス: {selectedIssue.state?.name || '不明'}</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text>優先度: {selectedIssue.priority || '未設定'}</Text>
-        </Box>
-        {selectedIssue.description && (
-          <Box marginTop={1}>
-            <Text>{selectedIssue.description}</Text>
-          </Box>
-        )}
-        <Box marginTop={2}>
-          <Text dimColor>qまたはEscで一覧に戻る</Text>
-        </Box>
-      </Box>
-    );
+    return <IssueDetail issue={selectedIssue} onBack={handleBack} />;
   }
 
   if (issues.length === 0) {
@@ -94,10 +114,6 @@ export const CycleIssues: React.FC = () => {
     );
   }
 
-  const handleSelect = (issue: any) => {
-    setSelectedIssue(issue);
-  };
-
   return (
     <Box flexDirection="column">
       <Box marginBottom={1}>
@@ -107,7 +123,7 @@ export const CycleIssues: React.FC = () => {
       </Box>
       <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
       <Box marginTop={1}>
-        <IssueList issues={issues} onSelect={handleSelect} showAssignee={true} />
+        <IssueList issues={issues} onSelect={handleIssueSelect} showAssignee={true} />
       </Box>
     </Box>
   );
