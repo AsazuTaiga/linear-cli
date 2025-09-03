@@ -22,10 +22,6 @@ export const App: React.FC = () => {
     { label: '📋 自分のIssue（現在のサイクル）', value: 'my-issues-current' },
     { label: '📁 自分のすべてのIssue', value: 'my-issues-all' },
     { label: '🔄 現在のサイクルのIssue', value: 'cycle-issues' },
-    { label: '➕ Issue作成', value: 'create-issue' },
-    { label: '🔍 Issue検索', value: 'search-issues' },
-    { label: '📊 プロジェクト一覧', value: 'list-projects' },
-    { label: '⚙️  設定', value: 'config' },
     { label: '🚪 終了', value: 'exit' },
   ];
 
@@ -56,17 +52,6 @@ export const App: React.FC = () => {
           {selectedAction === 'my-issues-current' && <MyIssues mode="current-cycle" />}
           {selectedAction === 'my-issues-all' && <MyIssues mode="all" />}
           {selectedAction === 'cycle-issues' && <CycleIssues />}
-          {(selectedAction === 'create-issue' || 
-            selectedAction === 'search-issues' || 
-            selectedAction === 'list-projects' || 
-            selectedAction === 'config') && (
-            <Box flexDirection="column">
-              <Text>🚧 {items.find(i => i.value === selectedAction)?.label} (実装中...)</Text>
-              <Box marginTop={1}>
-                <Text dimColor>qまたはEscで戻る</Text>
-              </Box>
-            </Box>
-          )}
         </>
       )}
     </Box>
