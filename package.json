@@ -2,14 +2,16 @@
   "name": "linear-cli",
   "version": "0.1.0",
   "type": "module",
+  "main": "./dist/cli.js",
   "bin": {
-    "linear": "./src/cli.tsx"
+    "linear": "./dist/cli.js"
   },
   "scripts": {
     "dev": "bun run --watch src/cli.tsx",
-    "build": "bun build src/cli.tsx --outdir dist --target node",
+    "build": "bun build ./src/cli.tsx --outfile ./dist/cli.js --target node --minify",
+    "build:binary": "bun build ./src/cli.tsx --compile --outfile ./dist/linear",
     "start": "bun run dist/cli.js",
-    "link-local": "bun run build && bun link",
+    "link-local": "bun run build && chmod +x ./dist/cli.js && bun link",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint ./src",
     "format": "biome format --write ./src",
