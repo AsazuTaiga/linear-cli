@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { linearClient } from '../linear';
 
 // GraphQLクエリのフィルタ引数チェック用のテスト
@@ -8,16 +8,16 @@ describe('Linear GraphQL Query Filter Arguments', () => {
     const extractQueryParameters = (queryString: string): string[] => {
       const match = queryString.match(/query\s+\w+\s*\(([^)]+)\)/);
       if (!match) return [];
-      
+
       const params = match[1];
       const paramNames = params
         .split(',')
-        .map(param => {
+        .map((param) => {
           const paramMatch = param.trim().match(/\$(\w+):/);
           return paramMatch ? paramMatch[1] : null;
         })
         .filter(Boolean) as string[];
-      
+
       return paramNames;
     };
 
@@ -31,20 +31,20 @@ describe('Linear GraphQL Query Filter Arguments', () => {
 
     // すべてのGraphQLクエリをチェックするテスト
     it('すべてのクエリで$includeArchivedパラメータが宣言され、使用されていること', async () => {
-      const sourceCode = await import('fs').then(fs => 
-        fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8')
+      const sourceCode = await import('node:fs').then((fs) =>
+        fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8'),
       );
 
       // GraphQLクエリ文字列を抽出
       const queryRegex = /const query = `([^`]+)`/g;
       const queries: { query: string; lineNumber: number }[] = [];
       let match;
-      
+
       while ((match = queryRegex.exec(sourceCode)) !== null) {
         const lines = sourceCode.substring(0, match.index).split('\n');
         queries.push({
           query: match[1],
-          lineNumber: lines.length
+          lineNumber: lines.length,
         });
       }
 
@@ -52,18 +52,18 @@ describe('Linear GraphQL Query Filter Arguments', () => {
 
       queries.forEach(({ query, lineNumber }) => {
         const parameters = extractQueryParameters(query);
-        
+
         // $filterパラメータがある場合、$includeArchivedも必須
         if (parameters.includes('filter')) {
           if (!parameters.includes('includeArchived')) {
             errors.push(
-              `Line ${lineNumber}: クエリに$filterがありますが、$includeArchivedパラメータがありません`
+              `Line ${lineNumber}: クエリに$filterがありますが、$includeArchivedパラメータがありません`,
             );
           } else {
             // $includeArchivedが宣言されているが使用されていない場合もチェック
             if (!isParameterUsedInQuery(query, 'includeArchived')) {
               errors.push(
-                `Line ${lineNumber}: $includeArchivedパラメータが宣言されていますが、クエリ内で使用されていません`
+                `Line ${lineNumber}: $includeArchivedパラメータが宣言されていますが、クエリ内で使用されていません`,
               );
             }
           }
@@ -71,25 +71,25 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       });
 
       if (errors.length > 0) {
-        throw new Error('GraphQLクエリのパラメータエラー:\n' + errors.join('\n'));
+        throw new Error(`GraphQLクエリのパラメータエラー:\n${errors.join('\n')}`);
       }
     });
 
     it('rawRequestの呼び出しで必要なパラメータが渡されていること', async () => {
-      const sourceCode = await import('fs').then(fs => 
-        fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8')
+      const sourceCode = await import('node:fs').then((fs) =>
+        fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8'),
       );
 
       // rawRequest呼び出しを検索
       const rawRequestRegex = /rawRequest[^(]*\([^,]+,\s*\{([^}]+)\}/g;
       const calls: { params: string; lineNumber: number }[] = [];
       let match;
-      
+
       while ((match = rawRequestRegex.exec(sourceCode)) !== null) {
         const lines = sourceCode.substring(0, match.index).split('\n');
         calls.push({
           params: match[1],
-          lineNumber: lines.length
+          lineNumber: lines.length,
         });
       }
 
@@ -100,14 +100,14 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         if (params.includes('filter')) {
           if (!params.includes('includeArchived')) {
             errors.push(
-              `Line ${lineNumber}: rawRequestにfilterが渡されていますが、includeArchivedが渡されていません`
+              `Line ${lineNumber}: rawRequestにfilterが渡されていますが、includeArchivedが渡されていません`,
             );
           }
         }
       });
 
       if (errors.length > 0) {
-        throw new Error('rawRequest呼び出しのパラメータエラー:\n' + errors.join('\n'));
+        throw new Error(`rawRequest呼び出しのパラメータエラー:\n${errors.join('\n')}`);
       }
     });
   });
@@ -117,9 +117,9 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       const mockClient = {
         client: {
           rawRequest: vi.fn().mockResolvedValue({
-            data: { issues: { nodes: [] } }
-          })
-        }
+            data: { issues: { nodes: [] } },
+          }),
+        },
       };
 
       // モックを設定
@@ -131,8 +131,8 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         expect.stringContaining('$includeArchived'),
         expect.objectContaining({
           filter: expect.any(Object),
-          includeArchived: false
-        })
+          includeArchived: false,
+        }),
       );
     });
 
@@ -141,12 +141,12 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         viewer: { id: 'user-123' },
         client: {
           rawRequest: vi.fn().mockResolvedValue({
-            data: { 
+            data: {
               viewer: { id: 'user-123' },
-              issues: { nodes: [] } 
-            }
-          })
-        }
+              issues: { nodes: [] },
+            },
+          }),
+        },
       };
 
       vi.spyOn(linearClient, 'getClient').mockResolvedValue(mockClient as any);
@@ -157,8 +157,8 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         expect.stringContaining('$includeArchived'),
         expect.objectContaining({
           filter: expect.any(Object),
-          includeArchived: false
-        })
+          includeArchived: false,
+        }),
       );
     });
 
@@ -166,8 +166,8 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       const mockClient = {
         client: {
           rawRequest: vi.fn().mockResolvedValue({
-            data: { issues: { nodes: [] } }
-          })
+            data: { issues: { nodes: [] } },
+          }),
         },
         team: vi.fn().mockResolvedValue({
           activeCycle: {
@@ -175,18 +175,18 @@ describe('Linear GraphQL Query Filter Arguments', () => {
             name: 'Sprint 1',
             number: 1,
             startsAt: '2024-01-01',
-            endsAt: '2024-01-14'
-          }
-        })
+            endsAt: '2024-01-14',
+          },
+        }),
       };
 
       vi.spyOn(linearClient, 'getClient').mockResolvedValue(mockClient as any);
-      
+
       // configServiceのモック
       const { configService } = await import('../config');
       vi.spyOn(configService, 'getConfig').mockResolvedValue({
         apiToken: 'test-token',
-        defaultTeamId: 'team-123'
+        defaultTeamId: 'team-123',
       } as any);
 
       await linearClient.getCycleIssues();
@@ -195,8 +195,8 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         expect.stringContaining('$includeArchived'),
         expect.objectContaining({
           filter: expect.any(Object),
-          includeArchived: false
-        })
+          includeArchived: false,
+        }),
       );
     });
   });
@@ -205,21 +205,21 @@ describe('Linear GraphQL Query Filter Arguments', () => {
 // パラメータ検証用のヘルパー関数を別途エクスポート
 export const validateGraphQLParameters = (
   queryString: string,
-  variables: Record<string, any>
+  variables: Record<string, any>,
 ): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
-  
+
   // クエリ文字列からパラメータを抽出
   const match = queryString.match(/query\s+\w+\s*\(([^)]+)\)/);
   if (!match) {
     return { valid: true, errors: [] };
   }
-  
+
   const params = match[1];
   const requiredParams: string[] = [];
-  
+
   // 必須パラメータを解析
-  params.split(',').forEach(param => {
+  params.split(',').forEach((param) => {
     const paramMatch = param.trim().match(/\$(\w+):\s*([^,\s]+)(!)?/);
     if (paramMatch) {
       const [, paramName, , isRequired] = paramMatch;
@@ -228,21 +228,21 @@ export const validateGraphQLParameters = (
       }
     }
   });
-  
+
   // 必須パラメータの存在チェック
-  requiredParams.forEach(param => {
+  requiredParams.forEach((param) => {
     if (!(param in variables)) {
       errors.push(`必須パラメータ '${param}' が提供されていません`);
     }
   });
-  
+
   // filterがある場合、includeArchivedも必須
   if ('filter' in variables && !('includeArchived' in variables)) {
     errors.push('filterパラメータが提供されている場合、includeArchivedパラメータも必須です');
   }
-  
+
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 };

@@ -1,7 +1,7 @@
-import React from 'react';
 import { Box, Text } from 'ink';
-import { StatusBadge } from './StatusBadge.js';
+import type React from 'react';
 import { PriorityBadge } from './PriorityBadge.js';
+import { StatusBadge } from './StatusBadge.js';
 
 interface IssueItemProps {
   issue: any;
@@ -9,8 +9,10 @@ interface IssueItemProps {
 }
 
 export const IssueItem: React.FC<IssueItemProps> = ({ issue, showAssignee = false }) => {
-  const assignee = showAssignee ? (issue.assignee?.displayName || issue.assignee?.name || '未割当') : null;
-  
+  const assignee = showAssignee
+    ? issue.assignee?.displayName || issue.assignee?.name || '未割当'
+    : null;
+
   return (
     <Box gap={1}>
       <Text>{issue.identifier.padEnd(8)}</Text>

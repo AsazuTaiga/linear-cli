@@ -2,8 +2,7 @@ import { Command } from 'commander';
 import { configService } from '../services/config.js';
 import { linearClient } from '../services/linear.js';
 
-export const configCommand = new Command('config')
-  .description('設定関連のコマンド');
+export const configCommand = new Command('config').description('設定関連のコマンド');
 
 configCommand
   .command('set-token')
@@ -25,12 +24,12 @@ configCommand
   .action(async () => {
     const config = await configService.getConfig();
     if (config.apiToken) {
-      console.log('Linear APIトークン: ****' + config.apiToken.slice(-4));
+      console.log(`Linear APIトークン: ****${config.apiToken.slice(-4)}`);
     } else {
       console.log('Linear APIトークンが設定されていません');
     }
     if (config.defaultTeamId) {
-      console.log('デフォルトチームID: ' + config.defaultTeamId);
+      console.log(`デフォルトチームID: ${config.defaultTeamId}`);
     } else {
       console.log('デフォルトチームが設定されていません');
     }
@@ -67,28 +66,30 @@ configCommand
   .action(async (teamIdOrKey: string) => {
     try {
       // UUID形式かチェック
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(teamIdOrKey);
-      
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        teamIdOrKey,
+      );
+
       let teamId = teamIdOrKey;
-      
+
       // UUIDでない場合は、チームキーとして扱い、実際のIDを検索
       if (!isUuid) {
         const teams = await linearClient.getTeams();
-        const team = teams.find(t => t.key.toUpperCase() === teamIdOrKey.toUpperCase());
-        
+        const team = teams.find((t) => t.key.toUpperCase() === teamIdOrKey.toUpperCase());
+
         if (!team) {
           console.error(`❌ チームキー '${teamIdOrKey}' が見つかりませんでした`);
           console.log('\n利用可能なチームキー:');
-          teams.forEach(t => {
+          teams.forEach((t) => {
             console.log(`  ${t.key} - ${t.name}`);
           });
           process.exit(1);
         }
-        
+
         teamId = team.id;
         console.log(`📝 チーム '${team.name}' (${team.key}) を選択しました`);
       }
-      
+
       await configService.setDefaultTeam(teamId);
       console.log('✅ デフォルトチームを設定しました');
     } catch (error) {

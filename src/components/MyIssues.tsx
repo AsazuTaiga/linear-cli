@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { linearClient } from '../services/linear.js';
 import { IssueList } from './IssueListView.js';
-import { StatusBadge } from './StatusBadge.js';
-import { PriorityBadge } from './PriorityBadge.js';
 
 interface Issue {
   id: string;
@@ -62,6 +61,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
 
   useEffect(() => {
     loadIssues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadIssues = async () => {
@@ -70,11 +70,13 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
         inCurrentCycle: mode === 'current-cycle',
         includeCompleted: false,
       });
-      
+
       if (mode === 'current-cycle' && fetchedIssues.length > 0 && fetchedIssues[0].cycle) {
-        setCycleName(fetchedIssues[0].cycle.name || fetchedIssues[0].cycle.number?.toString() || '');
+        setCycleName(
+          fetchedIssues[0].cycle.name || fetchedIssues[0].cycle.number?.toString() || '',
+        );
       }
-      
+
       setIssues(fetchedIssues);
     } catch (err) {
       setError(err instanceof Error ? err.message : '不明なエラー');
@@ -102,27 +104,27 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
     );
   }
 
-
   if (issues.length === 0) {
     return (
       <Box flexDirection="column">
         <Text>
-          {mode === 'current-cycle' 
-            ? '現在のサイクルに自分のIssueはありません' 
+          {mode === 'current-cycle'
+            ? '現在のサイクルに自分のIssueはありません'
             : '自分のIssueが見つかりませんでした'}
         </Text>
       </Box>
     );
   }
 
-
   return (
     <Box flexDirection="column">
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          📋 {mode === 'current-cycle' 
-            ? `自分のIssue（${cycleName || '現在のサイクル'}）` 
-            : '自分のすべてのIssue'} ({issues.length}件)
+          📋{' '}
+          {mode === 'current-cycle'
+            ? `自分のIssue（${cycleName || '現在のサイクル'}）`
+            : '自分のすべてのIssue'}{' '}
+          ({issues.length}件)
         </Text>
       </Box>
       <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>

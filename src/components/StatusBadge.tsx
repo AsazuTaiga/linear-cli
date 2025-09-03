@@ -1,5 +1,5 @@
-import React from "react";
-import { Text } from "ink";
+import { Text } from 'ink';
+import type React from 'react';
 
 interface StatusBadgeProps {
   status: string;
@@ -9,23 +9,23 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   const statusLower = status.toLowerCase();
 
   switch (statusLower) {
-    case "todo":
+    case 'todo':
       return <Text color="white">⬤</Text>;
-    case "backlog":
+    case 'backlog':
       return <Text color="gray">⬤</Text>;
-    case "in_progress":
-    case "in progress":
-    case "inprogress":
+    case 'in_progress':
+    case 'in progress':
+    case 'inprogress':
       return <Text color="yellow">⬤</Text>;
-    case "in_review":
-    case "in review":
-    case "inreview":
+    case 'in_review':
+    case 'in review':
+    case 'inreview':
       return <Text color="green">⬤</Text>;
-    case "done":
-    case "completed":
+    case 'done':
+    case 'completed':
       return <Text color="magenta">⬤</Text>;
-    case "canceled":
-    case "cancelled":
+    case 'canceled':
+    case 'cancelled':
       return <Text color="gray">⬤</Text>;
     default:
       return <Text>??</Text>;

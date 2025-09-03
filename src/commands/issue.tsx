@@ -1,11 +1,8 @@
 import { Command } from 'commander';
-import React from 'react';
-import { render } from 'ink';
 // import { IssueList } from '../components/IssueList.js';
 import { linearClient } from '../services/linear.js';
 
-export const issueCommand = new Command('issue')
-  .description('Issue関連のコマンド');
+export const issueCommand = new Command('issue').description('Issue関連のコマンド');
 
 issueCommand
   .command('list')
@@ -13,10 +10,12 @@ issueCommand
   .option('-s, --status <status>', 'ステータスでフィルタ (todo, in_progress, done)')
   .option('-a, --assignee <assignee>', '担当者でフィルタ')
   .option('-p, --project <project>', 'プロジェクトでフィルタ')
-  .action(async (options) => {
+  .action(async (_options) => {
     const client = await linearClient.getClient();
     if (!client) {
-      console.error('Linear APIトークンが設定されていません。`linear config set-token`を実行してください。');
+      console.error(
+        'Linear APIトークンが設定されていません。`linear config set-token`を実行してください。',
+      );
       process.exit(1);
     }
 
@@ -33,7 +32,9 @@ issueCommand
   .action(async (options) => {
     const client = await linearClient.getClient();
     if (!client) {
-      console.error('Linear APIトークンが設定されていません。`linear config set-token`を実行してください。');
+      console.error(
+        'Linear APIトークンが設定されていません。`linear config set-token`を実行してください。',
+      );
       process.exit(1);
     }
 

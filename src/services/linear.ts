@@ -1,7 +1,7 @@
-import { LinearClient, LinearGraphQLClient } from '@linear/sdk';
-import { configService } from './config.js';
+import { LinearClient, type LinearGraphQLClient } from '@linear/sdk';
 import { cacheService } from './cache.js';
-import { GraphQLQueryValidator, applyLinearDefaults } from './graphql-validator.js';
+import { configService } from './config.js';
+import { applyLinearDefaults, GraphQLQueryValidator } from './graphql-validator.js';
 
 interface IssueNode {
   id: string;
@@ -66,9 +66,6 @@ interface Cycle {
 }
 
 class LinearService {
-  private cycleCache: Cycle | null = null;
-  private cycleCacheTimestamp: number = 0;
-  private cycleCacheTTL = 10 * 60 * 1000; // 10分
   private client: LinearClient | null = null;
 
   async getClient(): Promise<LinearClient | null> {
@@ -106,15 +103,15 @@ class LinearService {
     }
 
     const filter: Record<string, any> = {};
-    
+
     if (options?.status) {
       filter.state = { name: { eq: options.status } };
     }
-    
+
     if (options?.assigneeId) {
       filter.assignee = { id: { eq: options.assigneeId } };
     }
-    
+
     if (options?.projectId) {
       filter.project = { id: { eq: options.projectId } };
     }
@@ -165,16 +162,19 @@ class LinearService {
     `;
 
     const graphQLClient: LinearGraphQLClient = client.client;
-    
+
     // GraphQLパラメータの検証
     const variables = applyLinearDefaults({ filter });
     GraphQLQueryValidator.validate({
       queryName: 'GetIssues',
       queryString: query,
-      variables
+      variables,
     });
-    
-    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(query, variables);
+
+    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(
+      query,
+      variables,
+    );
 
     if (!response.data) {
       throw new Error('Failed to fetch issues');
@@ -196,7 +196,7 @@ class LinearService {
 
     const config = await configService.getConfig();
     const teamId = data.teamId || config.defaultTeamId;
-    
+
     if (!teamId) {
       throw new Error('Team ID is required');
     }
@@ -289,16 +289,19 @@ class LinearService {
     }
 
     const graphQLClient: LinearGraphQLClient = client.client;
-    
+
     // GraphQLパラメータの検証
     const variables = applyLinearDefaults({ filter });
     GraphQLQueryValidator.validate({
       queryName: 'GetMyIssues',
       queryString: query,
-      variables
+      variables,
     });
-    
-    const response = await graphQLClient.rawRequest<ViewerIssuesResponse, Record<string, any>>(query, variables);
+
+    const response = await graphQLClient.rawRequest<ViewerIssuesResponse, Record<string, any>>(
+      query,
+      variables,
+    );
 
     if (!response.data) {
       throw new Error('Failed to fetch issues');
@@ -323,9 +326,9 @@ class LinearService {
 
     const config = await configService.getConfig();
     const teamId = config.defaultTeamId;
-    
+
     // 現在の日付を取得
-    const now = new Date();
+    const _now = new Date();
 
     let cycle: Cycle | null = null;
     if (!teamId) {
@@ -339,8 +342,14 @@ class LinearService {
             id: activeCycle.id,
             name: activeCycle.name || '',
             number: activeCycle.number,
-            startsAt: activeCycle.startsAt instanceof Date ? activeCycle.startsAt.toISOString() : activeCycle.startsAt,
-            endsAt: activeCycle.endsAt instanceof Date ? activeCycle.endsAt.toISOString() : activeCycle.endsAt,
+            startsAt:
+              activeCycle.startsAt instanceof Date
+                ? activeCycle.startsAt.toISOString()
+                : activeCycle.startsAt,
+            endsAt:
+              activeCycle.endsAt instanceof Date
+                ? activeCycle.endsAt.toISOString()
+                : activeCycle.endsAt,
           };
         }
       }
@@ -353,8 +362,14 @@ class LinearService {
           id: activeCycle.id,
           name: activeCycle.name || '',
           number: activeCycle.number,
-          startsAt: activeCycle.startsAt instanceof Date ? activeCycle.startsAt.toISOString() : activeCycle.startsAt,
-          endsAt: activeCycle.endsAt instanceof Date ? activeCycle.endsAt.toISOString() : activeCycle.endsAt,
+          startsAt:
+            activeCycle.startsAt instanceof Date
+              ? activeCycle.startsAt.toISOString()
+              : activeCycle.startsAt,
+          endsAt:
+            activeCycle.endsAt instanceof Date
+              ? activeCycle.endsAt.toISOString()
+              : activeCycle.endsAt,
         };
       }
     }
@@ -428,20 +443,23 @@ class LinearService {
     `;
 
     const graphQLClient: LinearGraphQLClient = client.client;
-    
+
     // GraphQLパラメータの検証
     const variables = applyLinearDefaults({
       filter: {
-        cycle: { id: { eq: currentCycle.id } }
-      }
+        cycle: { id: { eq: currentCycle.id } },
+      },
     });
     GraphQLQueryValidator.validate({
       queryName: 'GetCycleIssues',
       queryString: query,
-      variables
+      variables,
     });
-    
-    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(query, variables);
+
+    const response = await graphQLClient.rawRequest<IssuesResponse, Record<string, any>>(
+      query,
+      variables,
+    );
 
     if (!response.data) {
       throw new Error('Failed to fetch cycle issues');

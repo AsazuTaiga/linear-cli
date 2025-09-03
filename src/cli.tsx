@@ -1,17 +1,13 @@
 #!/usr/bin/env bun
 
-import React from 'react';
-import { render } from 'ink';
 import { Command } from 'commander';
-import { App } from './components/App.js';
+import { render } from 'ink';
 import { configCommand } from './commands/config.js';
+import { App } from './components/App.js';
 
 const program = new Command();
 
-program
-  .name('linear')
-  .description('Linear CLI - Issueの管理をターミナルから')
-  .version('0.1.0');
+program.name('linear').description('Linear CLI - Issueの管理をターミナルから').version('0.1.0');
 
 program.addCommand(configCommand);
 

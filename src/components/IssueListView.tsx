@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
-import { IssueItem } from './IssueItem.js';
+import type React from 'react';
+import { useMemo, useState } from 'react';
 import { sortIssuesByStatus } from '../utils/sort.js';
+import { IssueItem } from './IssueItem.js';
 
 interface IssueListProps {
   issues: any[];
@@ -13,29 +14,29 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
   const [selectedIndex, setSelectedIndex] = useState(0);
   const sortedIssues = sortIssuesByStatus(issues);
   const { stdout } = useStdout();
-  
+
   // ターミナルの高さを取得し、表示可能な行数を計算
   const terminalHeight = stdout.rows || 20;
   // ヘッダーやその他のUI要素のために余裕を持たせる（より保守的に）
   const maxVisibleItems = Math.max(3, Math.min(terminalHeight - 8, 30));
-  
+
   // 表示範囲を計算
   const visibleRange = useMemo(() => {
     const halfVisible = Math.floor(maxVisibleItems / 2);
     let start = Math.max(0, selectedIndex - halfVisible);
-    let end = Math.min(sortedIssues.length, start + maxVisibleItems);
-    
+    const end = Math.min(sortedIssues.length, start + maxVisibleItems);
+
     // 最後の方で表示項目が少なくなる場合は、開始位置を調整
     if (end - start < maxVisibleItems && start > 0) {
       start = Math.max(0, end - maxVisibleItems);
     }
-    
+
     return { start, end };
   }, [selectedIndex, sortedIssues.length, maxVisibleItems]);
-  
+
   const visibleIssues = sortedIssues.slice(visibleRange.start, visibleRange.end);
 
-  useInput((input, key) => {
+  useInput((_input, key) => {
     if (key.upArrow) {
       setSelectedIndex((prev) => Math.max(0, prev - 1));
     } else if (key.downArrow) {
@@ -53,7 +54,7 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
           <Text dimColor>↑ {visibleRange.start}件のIssueがあります</Text>
         </Box>
       )}
-      
+
       {/* Issue一覧 */}
       {visibleIssues.map((issue, visibleIndex) => {
         const actualIndex = visibleRange.start + visibleIndex;
@@ -66,7 +67,7 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
           </Box>
         );
       })}
-      
+
       {/* スクロールインジケーター（下） */}
       {visibleRange.end < sortedIssues.length && (
         <Box marginTop={1}>

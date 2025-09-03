@@ -1,5 +1,5 @@
-import React from "react";
-import { Text } from "ink";
+import { Text } from 'ink';
+import type React from 'react';
 
 interface PriorityBadgeProps {
   priority: number | undefined;

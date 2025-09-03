@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { linearClient } from '../services/linear.js';
 import { IssueList } from './IssueListView.js';
-import { StatusBadge } from './StatusBadge.js';
-import { PriorityBadge } from './PriorityBadge.js';
 
 interface Issue {
   id: string;
@@ -61,16 +60,21 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
 
   useEffect(() => {
     loadIssues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadIssues = async () => {
     try {
       const fetchedIssues = await linearClient.getCycleIssues();
-      
+
       if (fetchedIssues.length > 0 && fetchedIssues[0].cycle) {
-        setCycleName(fetchedIssues[0].cycle.name || fetchedIssues[0].cycle.number?.toString() || '現在のサイクル');
+        setCycleName(
+          fetchedIssues[0].cycle.name ||
+            fetchedIssues[0].cycle.number?.toString() ||
+            '現在のサイクル',
+        );
       }
-      
+
       setIssues(fetchedIssues);
     } catch (err) {
       setError(err instanceof Error ? err.message : '不明なエラー');
@@ -97,7 +101,6 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
       </Box>
     );
   }
-
 
   if (issues.length === 0) {
     return (

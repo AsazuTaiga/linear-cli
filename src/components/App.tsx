@@ -1,9 +1,10 @@
-import React, { useReducer } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { Box, Text, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
-import { MyIssues } from './MyIssues.js';
+import type React from 'react';
+import { useReducer } from 'react';
 import { CycleIssues } from './CycleIssues.js';
 import { IssueDetail } from './IssueDetail.js';
+import { MyIssues } from './MyIssues.js';
 
 interface AppProps {
   defaultView?: 'mine' | 'mine-all' | 'cycle';
@@ -34,7 +35,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ...state,
         currentView: 'issue-detail',
         previousView: action.fromView,
-        selectedIssue: action.issue
+        selectedIssue: action.issue,
       };
     case 'GO_BACK':
       if (state.currentView === 'issue-detail' && state.previousView) {
@@ -43,7 +44,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           ...state,
           currentView: state.previousView,
           previousView: 'menu',
-          selectedIssue: null
+          selectedIssue: null,
         };
       } else if (state.currentView !== 'menu') {
         // Issue一覧からメニューに戻る
@@ -51,7 +52,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           ...state,
           currentView: 'menu',
           previousView: null,
-          selectedIssue: null
+          selectedIssue: null,
         };
       }
       return state;
@@ -65,7 +66,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   const [state, dispatch] = useReducer(appReducer, {
     currentView: defaultView as ViewType,
     previousView: 'menu',
-    selectedIssue: null
+    selectedIssue: null,
   });
 
   useInput((input, key) => {
@@ -103,7 +104,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
     dispatch({ type: 'SELECT_ISSUE', issue, fromView });
   };
 
-  const handleBack = () => {
+  const _handleBack = () => {
     dispatch({ type: 'GO_BACK' });
   };
 
@@ -117,31 +118,24 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
           </Box>
         </>
       )}
-      
+
       {state.currentView === 'mine' && (
-        <MyIssues 
-          mode="current-cycle" 
+        <MyIssues
+          mode="current-cycle"
           onSelectIssue={(issue) => handleIssueSelect(issue, 'mine')}
         />
       )}
-      
+
       {state.currentView === 'mine-all' && (
-        <MyIssues 
-          mode="all" 
-          onSelectIssue={(issue) => handleIssueSelect(issue, 'mine-all')}
-        />
+        <MyIssues mode="all" onSelectIssue={(issue) => handleIssueSelect(issue, 'mine-all')} />
       )}
-      
+
       {state.currentView === 'cycle' && (
-        <CycleIssues 
-          onSelectIssue={(issue) => handleIssueSelect(issue, 'cycle')}
-        />
+        <CycleIssues onSelectIssue={(issue) => handleIssueSelect(issue, 'cycle')} />
       )}
-      
+
       {state.currentView === 'issue-detail' && state.selectedIssue && (
-        <IssueDetail 
-          issue={state.selectedIssue}
-        />
+        <IssueDetail issue={state.selectedIssue} />
       )}
     </Box>
   );

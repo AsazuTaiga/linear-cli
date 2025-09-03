@@ -1,6 +1,6 @@
 export const getStatusSortOrder = (status: string): number => {
   const statusLower = status.toLowerCase();
-  
+
   switch (statusLower) {
     case 'in progress':
     case 'in_progress':
@@ -26,16 +26,16 @@ export const sortIssuesByStatus = (issues: any[]): any[] => {
   return [...issues].sort((a, b) => {
     const orderA = getStatusSortOrder(a.state?.name || '');
     const orderB = getStatusSortOrder(b.state?.name || '');
-    
+
     // まずステータスでソート
     if (orderA !== orderB) {
       return orderA - orderB;
     }
-    
+
     // 同じステータスの場合は優先度でソート（高い優先度が上）
     const priorityA = a.priority ?? 999;
     const priorityB = b.priority ?? 999;
-    
+
     return priorityA - priorityB;
   });
 };

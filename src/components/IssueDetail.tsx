@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import { Box, Text, useInput, useStdout } from 'ink';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import type React from 'react';
+import { useState } from 'react';
 
 const execAsync = promisify(exec);
 
@@ -36,7 +37,7 @@ interface IssueDetailProps {
 export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
-  const [selectedLinkIndex, setSelectedLinkIndex] = useState<number | null>(null);
+  const [_selectedLinkIndex, _setSelectedLinkIndex] = useState<number | null>(null);
   const [scrollOffset, setScrollOffset] = useState(0);
   const { stdout } = useStdout();
 
@@ -50,32 +51,32 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
         openLink(links[index].url);
       }
     } else if (key.upArrow || input === 'k') {
-      setScrollOffset(prev => Math.max(0, prev - 1));
+      setScrollOffset((prev) => Math.max(0, prev - 1));
     } else if (key.downArrow || input === 'j') {
-      setScrollOffset(prev => prev + 1);
+      setScrollOffset((prev) => prev + 1);
     }
   });
 
   const copyToClipboard = async () => {
     setCopied(false);
     setCopyError(null);
-    
+
     try {
       // Issue内容を整形
       const issueContent = formatIssueForClaude(issue);
-      
+
       // 一時ファイルを使ってpbcopyに渡す（特殊文字の問題を回避）
       const safeIdentifier = issue.identifier.replace(/[^a-zA-Z0-9-]/g, '_');
       const tmpFile = `/tmp/linear-issue-${safeIdentifier}.txt`;
-      const fs = await import('fs/promises');
+      const fs = await import('node:fs/promises');
       await fs.writeFile(tmpFile, issueContent, 'utf-8');
-      
+
       // pbcopyコマンドでクリップボードにコピー
       await execAsync(`pbcopy < ${tmpFile}`);
-      
+
       // 一時ファイルを削除
       await fs.unlink(tmpFile);
-      
+
       // 成功メッセージを表示
       setCopied(true);
       setTimeout(() => {
@@ -92,24 +93,24 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
   const openLink = async (url: string) => {
     try {
       await execAsync(`open "${url}"`);
-    } catch (error) {
+    } catch (_error) {
       // エラーは無視（ブラウザが開けない環境の場合）
     }
   };
 
   const getAllLinks = () => {
     const links: Array<{ title: string; url: string; type: string }> = [];
-    
+
     // Linear Issue URLを最初に追加
     links.push({
       title: `${issue.identifier} (Linear)`,
       url: issue.url,
-      type: 'linear'
+      type: 'linear',
     });
-    
+
     // Attachmentsを追加（GitHub PRなど）
     if (issue.attachments?.nodes) {
-      issue.attachments.nodes.forEach(attachment => {
+      issue.attachments.nodes.forEach((attachment) => {
         let title = attachment.title || 'リンク';
         // GitHub PRの場合は特別な表記
         if (attachment.sourceType === 'github' && attachment.url.includes('/pull/')) {
@@ -123,11 +124,11 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
         links.push({
           title,
           url: attachment.url,
-          type: attachment.sourceType || 'other'
+          type: attachment.sourceType || 'other',
         });
       });
     }
-    
+
     return links;
   };
 
@@ -152,37 +153,40 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
     return parts.join('\n');
   };
 
-
   // 表示可能な行数を計算
   const terminalHeight = stdout.rows || 20;
   const contentHeight = Math.max(5, terminalHeight - 5); // コマンド行とスクロールインジケーター分の余裕
 
   // 説明文を行単位で分割（簡易的な実装）
-  const descriptionLines = issue.description ? 
-    issue.description.split('\n').flatMap(line => {
-      const maxWidth = 80; // 一行の最大幅
-      const lines = [];
-      for (let i = 0; i < line.length; i += maxWidth) {
-        lines.push(line.slice(i, i + maxWidth));
-      }
-      return lines.length > 0 ? lines : [''];
-    }) : [];
+  const descriptionLines = issue.description
+    ? issue.description.split('\n').flatMap((line) => {
+        const maxWidth = 80; // 一行の最大幅
+        const lines = [];
+        for (let i = 0; i < line.length; i += maxWidth) {
+          lines.push(line.slice(i, i + maxWidth));
+        }
+        return lines.length > 0 ? lines : [''];
+      })
+    : [];
 
   // コンテンツ全体を構成
   const allContent = [];
-  
+
   // ヘッダー情報
   allContent.push({ type: 'header', content: `${issue.identifier} - ${issue.title}` });
-  allContent.push({ type: 'status', content: `ステータス: ${issue.state.name}${issue.assignee ? ` | 担当者: ${issue.assignee.displayName}` : ''}` });
-  
+  allContent.push({
+    type: 'status',
+    content: `ステータス: ${issue.state.name}${issue.assignee ? ` | 担当者: ${issue.assignee.displayName}` : ''}`,
+  });
+
   // 説明（空行なしで直接表示）
   if (descriptionLines.length > 0) {
     allContent.push({ type: 'label', content: '詳細:' });
-    descriptionLines.forEach(line => {
+    descriptionLines.forEach((line) => {
       allContent.push({ type: 'description', content: line });
     });
   }
-  
+
   // リンク（説明がある場合のみ空行を挿入）
   const links = getAllLinks();
   if (links.length > 0) {
@@ -194,7 +198,7 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
       allContent.push({ type: 'link', content: `[${index + 1}] ${link.title}` });
     });
   }
-  
+
   // スクロール範囲を計算
   const visibleContent = allContent.slice(scrollOffset, scrollOffset + contentHeight);
   const hasMoreAbove = scrollOffset > 0;
@@ -202,16 +206,16 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
 
   return (
     <Box flexDirection="column">
-      {hasMoreAbove && (
-        <Text dimColor>↑ スクロール可能</Text>
-      )}
-      
+      {hasMoreAbove && <Text dimColor>↑ スクロール可能</Text>}
+
       {visibleContent.map((item, index) => {
         switch (item.type) {
           case 'header':
             return (
               <Box key={index}>
-                <Text bold color="cyan">{item.content}</Text>
+                <Text bold color="cyan">
+                  {item.content}
+                </Text>
               </Box>
             );
           case 'status':
@@ -223,7 +227,9 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
           case 'label':
             return (
               <Box key={index}>
-                <Text bold dimColor>{item.content}</Text>
+                <Text bold dimColor>
+                  {item.content}
+                </Text>
               </Box>
             );
           case 'description':
@@ -244,11 +250,8 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
             return null;
         }
       })}
-      
-      {hasMoreBelow && (
-        <Text dimColor>↓ スクロール可能</Text>
-      )}
 
+      {hasMoreBelow && <Text dimColor>↓ スクロール可能</Text>}
 
       {copied && (
         <Box marginTop={1}>
@@ -264,7 +267,7 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
 
       <Box marginTop={1}>
         <Text dimColor>
-          [↑↓/jk] スクロール  [1-9] リンクを開く  [c] クリップボードにコピー  [q/Esc] 戻る
+          [↑↓/jk] スクロール [1-9] リンクを開く [c] クリップボードにコピー [q/Esc] 戻る
         </Text>
       </Box>
     </Box>
