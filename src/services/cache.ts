@@ -5,7 +5,7 @@ interface CacheEntry<T> {
 
 export class CacheService {
   private cache: Map<string, CacheEntry<any>> = new Map();
-  private defaultTTL = 5 * 60 * 1000; // 5分
+  private defaultTTL = 5 * 60 * 1000; // 5 minutes
 
   set<T>(key: string, data: T, ttl?: number): void {
     this.cache.set(key, {

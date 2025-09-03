@@ -27,12 +27,12 @@ export const sortIssuesByStatus = (issues: any[]): any[] => {
     const orderA = getStatusSortOrder(a.state?.name || '');
     const orderB = getStatusSortOrder(b.state?.name || '');
 
-    // まずステータスでソート
+    // Sort by status first
     if (orderA !== orderB) {
       return orderA - orderB;
     }
 
-    // 同じステータスの場合は優先度でソート（高い優先度が上）
+    // If same status, sort by priority (higher priority first)
     const priorityA = a.priority ?? 999;
     const priorityB = b.priority ?? 999;
 

@@ -10,7 +10,7 @@ interface IssueItemProps {
 
 export const IssueItem: React.FC<IssueItemProps> = ({ issue, showAssignee = false }) => {
   const assignee = showAssignee
-    ? issue.assignee?.displayName || issue.assignee?.name || '未割当'
+    ? issue.assignee?.displayName || issue.assignee?.name || 'Unassigned'
     : null;
 
   return (

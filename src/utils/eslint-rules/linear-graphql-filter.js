@@ -1,64 +1,64 @@
 /**
- * ESLintカスタムルール: Linear GraphQL APIのフィルタ引数チェック
+ * ESLint custom rule: Linear GraphQL API filter argument check
  * 
- * このルールは以下をチェックします:
- * 1. GraphQLクエリに$filterパラメータがある場合、$includeArchivedパラメータも必須
- * 2. rawRequest呼び出し時にfilterを渡す場合、includeArchivedも必須
+ * This rule checks:
+ * 1. If GraphQL query has $filter parameter, $includeArchived parameter is also required
+ * 2. When passing filter in rawRequest call, includeArchived is also required
  */
 
 module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Linear GraphQL APIのフィルタ引数の必須チェック',
+      description: 'Required check for Linear GraphQL API filter arguments',
       category: 'Possible Errors',
       recommended: true
     },
     fixable: 'code',
     schema: [],
     messages: {
-      missingIncludeArchivedInQuery: 'GraphQLクエリに$filterがありますが、$includeArchivedパラメータが定義されていません',
-      missingIncludeArchivedInCall: 'rawRequest呼び出しでfilterが渡されていますが、includeArchivedが渡されていません',
-      unusedParameter: 'パラメータ "{{param}}" が定義されていますが、クエリ内で使用されていません'
+      missingIncludeArchivedInQuery: 'GraphQL query has $filter but missing $includeArchived parameter definition',
+      missingIncludeArchivedInCall: 'rawRequest call has filter but missing includeArchived',
+      unusedParameter: 'Parameter "{{param}}" is defined but not used in the query'
     }
   },
 
   create(context) {
-    // GraphQLクエリ文字列を保持
+    // Store GraphQL query strings
     const graphqlQueries = new Map();
 
     return {
-      // テンプレートリテラルでGraphQLクエリを検出
+      // Detect GraphQL queries in template literals
       TemplateLiteral(node) {
         const parent = node.parent;
         
-        // const query = `...` のパターンを検出
+        // Detect const query = `...` pattern
         if (parent && parent.type === 'VariableDeclarator' && 
             parent.id && parent.id.name === 'query') {
           
           const queryString = node.quasis.map(q => q.value.raw).join('');
           
-          // GraphQLクエリのパラメータを解析
+          // Parse GraphQL query parameters
           const queryMatch = queryString.match(/query\s+(\w+)\s*\(([^)]*)\)/);
           if (queryMatch) {
             const [, queryName, params] = queryMatch;
             const hasFilter = params.includes('$filter');
             const hasIncludeArchived = params.includes('$includeArchived');
             
-            // $filterがあるが$includeArchivedがない場合
+            // If has $filter but no $includeArchived
             if (hasFilter && !hasIncludeArchived) {
               context.report({
                 node,
                 messageId: 'missingIncludeArchivedInQuery',
                 fix(fixer) {
-                  // パラメータリストに$includeArchivedを追加
+                  // Add $includeArchived to parameter list
                   const newParams = params.trim() + ', $includeArchived: Boolean';
                   const newQueryString = queryString.replace(
                     /query\s+\w+\s*\([^)]*\)/,
                     `query ${queryName}(${newParams})`
                   );
                   
-                  // クエリ本文にもincludeArchivedを追加
+                  // Also add includeArchived to query body
                   const issuesMatch = newQueryString.match(/issues\([^)]*\)/);
                   if (issuesMatch) {
                     const newIssuesCall = issuesMatch[0].replace(
@@ -73,7 +73,7 @@ module.exports = {
               });
             }
             
-            // 定義されたパラメータがクエリ内で使用されているかチェック
+            // Check if defined parameters are used in the query
             const paramList = params.split(',').map(p => {
               const match = p.trim().match(/\$(\w+):/);
               return match ? match[1] : null;
@@ -91,7 +91,7 @@ module.exports = {
               }
             });
             
-            // クエリ情報を保存
+            // Save query information
             graphqlQueries.set(queryName, {
               node,
               hasFilter,
@@ -101,12 +101,12 @@ module.exports = {
         }
       },
 
-      // rawRequest呼び出しを検出
+      // Detect rawRequest calls
       CallExpression(node) {
         if (node.callee && node.callee.property && 
             node.callee.property.name === 'rawRequest') {
           
-          // 第2引数（variables）を確認
+          // Check second argument (variables)
           const variables = node.arguments[1];
           if (variables && variables.type === 'ObjectExpression') {
             let hasFilter = false;
@@ -121,13 +121,13 @@ module.exports = {
               }
             });
             
-            // filterがあるがincludeArchivedがない場合
+            // If has filter but no includeArchived
             if (hasFilter && !hasIncludeArchived) {
               context.report({
                 node: variables,
                 messageId: 'missingIncludeArchivedInCall',
                 fix(fixer) {
-                  // includeArchived: false を追加
+                  // Add includeArchived: false
                   const lastProp = variables.properties[variables.properties.length - 1];
                   const insertPosition = lastProp.range[1];
                   return fixer.insertTextAfter(lastProp, ',\n      includeArchived: false');

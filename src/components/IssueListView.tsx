@@ -15,18 +15,18 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
   const sortedIssues = sortIssuesByStatus(issues);
   const { stdout } = useStdout();
 
-  // ターミナルの高さを取得し、表示可能な行数を計算
+  // Get terminal height and calculate visible lines
   const terminalHeight = stdout.rows || 20;
-  // ヘッダーやその他のUI要素のために余裕を持たせる（より保守的に）
+  // Add margin for headers and other UI elements (more conservative)
   const maxVisibleItems = Math.max(3, Math.min(terminalHeight - 8, 30));
 
-  // 表示範囲を計算
+  // Calculate visible range
   const visibleRange = useMemo(() => {
     const halfVisible = Math.floor(maxVisibleItems / 2);
     let start = Math.max(0, selectedIndex - halfVisible);
     const end = Math.min(sortedIssues.length, start + maxVisibleItems);
 
-    // 最後の方で表示項目が少なくなる場合は、開始位置を調整
+    // Adjust start position if fewer items are visible at the end
     if (end - start < maxVisibleItems && start > 0) {
       start = Math.max(0, end - maxVisibleItems);
     }
@@ -48,14 +48,14 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
 
   return (
     <Box flexDirection="column">
-      {/* スクロールインジケーター（上） */}
+      {/* Scroll indicator (top) */}
       {visibleRange.start > 0 && (
         <Box marginBottom={1}>
-          <Text dimColor>↑ {visibleRange.start}件のIssueがあります</Text>
+          <Text dimColor>↑ {visibleRange.start} more issues</Text>
         </Box>
       )}
 
-      {/* Issue一覧 */}
+      {/* Issue list */}
       {visibleIssues.map((issue, visibleIndex) => {
         const actualIndex = visibleRange.start + visibleIndex;
         return (
@@ -68,10 +68,10 @@ export const IssueList: React.FC<IssueListProps> = ({ issues, onSelect, showAssi
         );
       })}
 
-      {/* スクロールインジケーター（下） */}
+      {/* Scroll indicator (bottom) */}
       {visibleRange.end < sortedIssues.length && (
         <Box marginTop={1}>
-          <Text dimColor>↓ {sortedIssues.length - visibleRange.end}件のIssueがあります</Text>
+          <Text dimColor>↓ {sortedIssues.length - visibleRange.end} more issues</Text>
         </Box>
       )}
     </Box>

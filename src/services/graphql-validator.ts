@@ -1,6 +1,6 @@
 /**
- * GraphQLクエリのパラメータバリデーター
- * SA/UA（Show Archived / Use Archived）フィルタの引数忘れを防止
+ * GraphQL query parameter validator
+ * Prevent missing SA/UA (Show Archived / Use Archived) filter arguments
  */
 
 interface ValidationResult {
@@ -16,11 +16,11 @@ interface GraphQLQueryInfo {
 }
 
 /**
- * GraphQLクエリのパラメータを検証する
+ * Validate GraphQL query parameters
  */
 export class GraphQLQueryValidator {
   /**
-   * クエリ文字列から定義されているパラメータを抽出
+   * Extract defined parameters from query string
    */
   private static extractQueryParameters(queryString: string): Map<string, string> {
     const params = new Map<string, string>();
@@ -41,58 +41,58 @@ export class GraphQLQueryValidator {
   }
 
   /**
-   * クエリ本文でパラメータが実際に使用されているかチェック
+   * Check if parameter is actually used in query body
    */
   private static isParameterUsedInQuery(queryString: string, paramName: string): boolean {
-    // クエリ定義行を除いた本文を取得
+    // Get body excluding query definition line
     const lines = queryString.split('\n');
     const queryBody = lines.slice(1).join('\n');
 
-    // パラメータが使用されているかチェック
+    // Check if parameter is used
     const regex = new RegExp(`\\$${paramName}\\b`, 'g');
     return regex.test(queryBody);
   }
 
   /**
-   * Linear API特有のバリデーションルール
+   * Linear API specific validation rules
    */
   private static validateLinearAPIRules(info: GraphQLQueryInfo): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
     const definedParams = GraphQLQueryValidator.extractQueryParameters(info.queryString);
 
-    // ルール1: filterパラメータがある場合、includeArchivedパラメータも必須
+    // Rule 1: If filter parameter exists, includeArchived parameter is also required
     if (definedParams.has('filter')) {
       if (!definedParams.has('includeArchived')) {
         errors.push(
-          `クエリ '${info.queryName}': $filterパラメータが定義されていますが、$includeArchivedパラメータが定義されていません`,
+          `Query '${info.queryName}': $filter parameter is defined but $includeArchived parameter is not defined`,
         );
       }
 
-      // 変数チェック
+      // Variable check
       if (info.variables && 'filter' in info.variables) {
         if (!('includeArchived' in info.variables)) {
           errors.push(
-            `クエリ '${info.queryName}': filter変数が提供されていますが、includeArchived変数が提供されていません`,
+            `Query '${info.queryName}': filter variable is provided but includeArchived variable is not provided`,
           );
         }
       }
     }
 
-    // ルール2: 定義されたパラメータは実際に使用されているべき
+    // Rule 2: Defined parameters should actually be used
     definedParams.forEach((_type, paramName) => {
       if (!GraphQLQueryValidator.isParameterUsedInQuery(info.queryString, paramName)) {
         warnings.push(
-          `クエリ '${info.queryName}': $${paramName}パラメータが定義されていますが、クエリ内で使用されていません`,
+          `Query '${info.queryName}': $${paramName} parameter is defined but not used in the query`,
         );
       }
     });
 
-    // ルール3: includeArchivedのデフォルト値チェック
+    // Rule 3: Check includeArchived default value
     if (info.variables && 'includeArchived' in info.variables) {
       if (info.variables.includeArchived === undefined || info.variables.includeArchived === null) {
         warnings.push(
-          `クエリ '${info.queryName}': includeArchivedの値が明示的に設定されていません。デフォルト値(false)を推奨します`,
+          `Query '${info.queryName}': includeArchived value is not explicitly set. Default value (false) is recommended`,
         );
       }
     }
@@ -105,12 +105,12 @@ export class GraphQLQueryValidator {
   }
 
   /**
-   * GraphQLクエリとその変数を検証
+   * Validate GraphQL query and its variables
    */
   public static validate(info: GraphQLQueryInfo): ValidationResult {
     const result = GraphQLQueryValidator.validateLinearAPIRules(info);
 
-    // 開発環境でのみ警告を出力
+    // Output warnings only in development environment
     if (process.env.NODE_ENV === 'development') {
       if (result.errors.length > 0) {
         console.error('GraphQL Validation Errors:', result.errors);
@@ -124,7 +124,7 @@ export class GraphQLQueryValidator {
   }
 
   /**
-   * 検証エラーがある場合は例外を投げる厳密な検証
+   * Strict validation that throws exception if there are validation errors
    */
   public static validateStrict(info: GraphQLQueryInfo): void {
     const result = GraphQLQueryValidator.validate(info);
@@ -136,7 +136,7 @@ export class GraphQLQueryValidator {
 }
 
 /**
- * GraphQLクエリの実行をラップして自動的に検証を行うヘルパー関数
+ * Helper function that wraps GraphQL query execution with automatic validation
  */
 export function createValidatedGraphQLClient<T extends { rawRequest: Function }>(
   client: T,
@@ -149,11 +149,11 @@ export function createValidatedGraphQLClient<T extends { rawRequest: Function }>
     variables?: Record<string, any>,
     requestHeaders?: Record<string, string>,
   ) => {
-    // クエリ名を抽出
+    // Extract query name
     const queryNameMatch = query.match(/query\s+(\w+)/);
     const queryName = queryNameMatch ? queryNameMatch[1] : 'Unknown';
 
-    // バリデーション実行
+    // Execute validation
     const validationInfo: GraphQLQueryInfo = {
       queryName,
       queryString: query,
@@ -166,7 +166,7 @@ export function createValidatedGraphQLClient<T extends { rawRequest: Function }>
       GraphQLQueryValidator.validate(validationInfo);
     }
 
-    // オリジナルのメソッドを実行
+    // Execute original method
     return originalRawRequest(query, variables, requestHeaders);
   };
 
@@ -174,7 +174,7 @@ export function createValidatedGraphQLClient<T extends { rawRequest: Function }>
 }
 
 /**
- * デフォルトのLinear API用設定
+ * Default settings for Linear API
  */
 export const LINEAR_GRAPHQL_DEFAULTS = {
   includeArchived: false,
@@ -182,13 +182,13 @@ export const LINEAR_GRAPHQL_DEFAULTS = {
 };
 
 /**
- * クエリ変数にデフォルト値を適用するヘルパー関数
+ * Helper function to apply default values to query variables
  */
 export function applyLinearDefaults(variables: Record<string, any>): Record<string, any> {
   return {
     ...LINEAR_GRAPHQL_DEFAULTS,
     ...variables,
-    // filterが存在する場合、includeArchivedも確実に設定
+    // If filter exists, ensure includeArchived is also set
     ...(variables.filter !== undefined && {
       includeArchived: variables.includeArchived ?? false,
     }),
