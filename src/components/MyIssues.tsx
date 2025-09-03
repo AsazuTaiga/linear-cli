@@ -61,7 +61,6 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
 
   useEffect(() => {
     loadIssues();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadIssues = async () => {

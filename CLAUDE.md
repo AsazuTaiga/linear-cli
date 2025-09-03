@@ -13,7 +13,7 @@ bun run check
 
 # Individual validation commands
 bun run typecheck        # TypeScript type check
-bun run lint             # ESLint linting
+bun run lint             # Biome linting
 bun run validate:graphql # GraphQL API call validation
 
 # Testing

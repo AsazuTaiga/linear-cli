@@ -1,18 +1,17 @@
 import { render } from 'ink-testing-library';
-import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 
 // Mock child components
 vi.mock('../MyIssues', () => ({
-  MyIssues: ({ mode, onSelectIssue }: any) => {
-    return <>{`MyIssues: ${mode}`}</>;
+  MyIssues: ({ mode }: any) => {
+    return `MyIssues: ${mode}`;
   },
 }));
 
 vi.mock('../CycleIssues', () => ({
-  CycleIssues: ({ onSelectIssue }: any) => {
-    return <>CycleIssues</>;
+  CycleIssues: () => {
+    return 'CycleIssues';
   },
 }));
 
