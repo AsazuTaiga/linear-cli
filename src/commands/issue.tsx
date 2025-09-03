@@ -2,41 +2,41 @@ import { Command } from 'commander';
 // import { IssueList } from '../components/IssueList.js';
 import { linearClient } from '../services/linear.js';
 
-export const issueCommand = new Command('issue').description('Issue関連のコマンド');
+export const issueCommand = new Command('issue').description('Issue-related commands');
 
 issueCommand
   .command('list')
-  .description('Issue一覧を表示')
-  .option('-s, --status <status>', 'ステータスでフィルタ (todo, in_progress, done)')
-  .option('-a, --assignee <assignee>', '担当者でフィルタ')
-  .option('-p, --project <project>', 'プロジェクトでフィルタ')
+  .description('Display issue list')
+  .option('-s, --status <status>', 'Filter by status (todo, in_progress, done)')
+  .option('-a, --assignee <assignee>', 'Filter by assignee')
+  .option('-p, --project <project>', 'Filter by project')
   .action(async (_options) => {
     const client = await linearClient.getClient();
     if (!client) {
       console.error(
-        'Linear APIトークンが設定されていません。`linear config set-token`を実行してください。',
+        'Linear API token is not configured. Please run `linear config set-token`.',
       );
       process.exit(1);
     }
 
     // render(<IssueList options={options} />);
-    console.log('Issue list機能は準備中です');
+    console.log('Issue list feature is under development');
   });
 
 issueCommand
   .command('create')
-  .description('新しいIssueを作成')
-  .requiredOption('-t, --title <title>', 'Issueのタイトル')
-  .option('-d, --description <description>', 'Issueの説明')
-  .option('-p, --project <project>', 'プロジェクトID')
+  .description('Create new issue')
+  .requiredOption('-t, --title <title>', 'Issue title')
+  .option('-d, --description <description>', 'Issue description')
+  .option('-p, --project <project>', 'Project ID')
   .action(async (options) => {
     const client = await linearClient.getClient();
     if (!client) {
       console.error(
-        'Linear APIトークンが設定されていません。`linear config set-token`を実行してください。',
+        'Linear API token is not configured. Please run `linear config set-token`.',
       );
       process.exit(1);
     }
 
-    console.log('Issue作成中...', options);
+    console.log('Creating issue...', options);
   });

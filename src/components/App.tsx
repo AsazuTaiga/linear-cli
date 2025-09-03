@@ -39,7 +39,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
     case 'GO_BACK':
       if (state.currentView === 'issue-detail' && state.previousView) {
-        // Issue詳細から前の一覧画面に戻る
+        // Go back from issue detail to previous list view
         return {
           ...state,
           currentView: state.previousView,
@@ -47,7 +47,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           selectedIssue: null,
         };
       } else if (state.currentView !== 'menu') {
-        // Issue一覧からメニューに戻る
+        // Go back from issue list to menu
         return {
           ...state,
           currentView: 'menu',
@@ -86,10 +86,10 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   });
 
   const items = [
-    { label: '📋 自分のIssue（現在のサイクル）', value: 'mine' },
-    { label: '📁 自分のすべてのIssue', value: 'mine-all' },
-    { label: '🔄 チーム全体のサイクルIssue', value: 'cycle' },
-    { label: '🚪 終了', value: 'exit' },
+    { label: '📋 My Issues (Current Cycle)', value: 'mine' },
+    { label: '📁 All My Issues', value: 'mine-all' },
+    { label: '🔄 Team Cycle Issues', value: 'cycle' },
+    { label: '🚪 Exit', value: 'exit' },
   ];
 
   const handleSelect = (item: { label: string; value: string }) => {
@@ -112,7 +112,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
     <Box flexDirection="column">
       {state.currentView === 'menu' && (
         <>
-          <Text dimColor>何をしますか？ (↑↓で選択、Enterで決定、qで終了)</Text>
+          <Text dimColor>What would you like to do? (↑↓ to select, Enter to confirm, q to exit)</Text>
           <Box marginTop={1}>
             <SelectInput items={items} onSelect={handleSelect} />
           </Box>

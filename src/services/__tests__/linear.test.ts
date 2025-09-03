@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { linearClient } from '../linear';
 
-// GraphQLクエリのフィルタ引数チェック用のテスト
+// Test for GraphQL query filter arguments check
 describe('Linear GraphQL Query Filter Arguments', () => {
-  describe('フィルタ引数の必須チェック', () => {
-    // GraphQLクエリ文字列からパラメータを抽出するヘルパー関数
+  describe('Required filter argument checks', () => {
+    // Helper function to extract parameters from GraphQL query string
     const extractQueryParameters = (queryString: string): string[] => {
       const match = queryString.match(/query\s+\w+\s*\(([^)]+)\)/);
       if (!match) return [];
@@ -21,21 +21,21 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       return paramNames;
     };
 
-    // クエリ内でパラメータが使用されているか確認するヘルパー関数
+    // Helper function to check if parameter is used in query
     const isParameterUsedInQuery = (queryString: string, paramName: string): boolean => {
-      // クエリ定義行を除いた部分で、$paramNameが使用されているかチェック
+      // Check if $paramName is used in query body excluding definition line
       const queryBody = queryString.split('\n').slice(1).join('\n');
       const regex = new RegExp(`\\$${paramName}\\b`, 'g');
       return regex.test(queryBody);
     };
 
-    // すべてのGraphQLクエリをチェックするテスト
-    it('すべてのクエリで$includeArchivedパラメータが宣言され、使用されていること', async () => {
+    // Test to check all GraphQL queries
+    it('should declare and use $includeArchived parameter in all queries', async () => {
       const sourceCode = await import('node:fs').then((fs) =>
         fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8'),
       );
 
-      // GraphQLクエリ文字列を抽出
+      // Extract GraphQL query strings
       const queryRegex = /const query = `([^`]+)`/g;
       const queries: { query: string; lineNumber: number }[] = [];
       let match;
@@ -53,17 +53,17 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       queries.forEach(({ query, lineNumber }) => {
         const parameters = extractQueryParameters(query);
 
-        // $filterパラメータがある場合、$includeArchivedも必須
+        // If $filter parameter exists, $includeArchived is also required
         if (parameters.includes('filter')) {
           if (!parameters.includes('includeArchived')) {
             errors.push(
-              `Line ${lineNumber}: クエリに$filterがありますが、$includeArchivedパラメータがありません`,
+              `Line ${lineNumber}: Query has $filter but missing $includeArchived parameter`,
             );
           } else {
-            // $includeArchivedが宣言されているが使用されていない場合もチェック
+            // Also check if $includeArchived is declared but not used
             if (!isParameterUsedInQuery(query, 'includeArchived')) {
               errors.push(
-                `Line ${lineNumber}: $includeArchivedパラメータが宣言されていますが、クエリ内で使用されていません`,
+                `Line ${lineNumber}: $includeArchived parameter is declared but not used in query`,
               );
             }
           }
@@ -71,16 +71,16 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       });
 
       if (errors.length > 0) {
-        throw new Error(`GraphQLクエリのパラメータエラー:\n${errors.join('\n')}`);
+        throw new Error(`GraphQL query parameter errors:\n${errors.join('\n')}`);
       }
     });
 
-    it('rawRequestの呼び出しで必要なパラメータが渡されていること', async () => {
+    it('should pass required parameters in rawRequest calls', async () => {
       const sourceCode = await import('node:fs').then((fs) =>
         fs.promises.readFile('/Users/asazu/work/linear-cli/src/services/linear.ts', 'utf-8'),
       );
 
-      // rawRequest呼び出しを検索
+      // Search for rawRequest calls
       const rawRequestRegex = /rawRequest[^(]*\([^,]+,\s*\{([^}]+)\}/g;
       const calls: { params: string; lineNumber: number }[] = [];
       let match;
@@ -96,24 +96,24 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       const errors: string[] = [];
 
       calls.forEach(({ params, lineNumber }) => {
-        // filterが渡されている場合、includeArchivedも必須
+        // If filter is passed, includeArchived is also required
         if (params.includes('filter')) {
           if (!params.includes('includeArchived')) {
             errors.push(
-              `Line ${lineNumber}: rawRequestにfilterが渡されていますが、includeArchivedが渡されていません`,
+              `Line ${lineNumber}: rawRequest has filter but missing includeArchived`,
             );
           }
         }
       });
 
       if (errors.length > 0) {
-        throw new Error(`rawRequest呼び出しのパラメータエラー:\n${errors.join('\n')}`);
+        throw new Error(`rawRequest call parameter errors:\n${errors.join('\n')}`);
       }
     });
   });
 
-  describe('実行時チェック', () => {
-    it('getIssuesメソッドが適切なパラメータでGraphQLを呼び出すこと', async () => {
+  describe('Runtime checks', () => {
+    it('getIssues method should call GraphQL with proper parameters', async () => {
       const mockClient = {
         client: {
           rawRequest: vi.fn().mockResolvedValue({
@@ -122,7 +122,7 @@ describe('Linear GraphQL Query Filter Arguments', () => {
         },
       };
 
-      // モックを設定
+      // Set up mocks
       vi.spyOn(linearClient, 'getClient').mockResolvedValue(mockClient as any);
 
       await linearClient.getIssues({ status: 'In Progress' });
@@ -136,7 +136,7 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       );
     });
 
-    it('getMyIssuesメソッドが適切なパラメータでGraphQLを呼び出すこと', async () => {
+    it('getMyIssues method should call GraphQL with proper parameters', async () => {
       const mockClient = {
         viewer: { id: 'user-123' },
         client: {
@@ -162,7 +162,7 @@ describe('Linear GraphQL Query Filter Arguments', () => {
       );
     });
 
-    it('getCycleIssuesメソッドが適切なパラメータでGraphQLを呼び出すこと', async () => {
+    it('getCycleIssues method should call GraphQL with proper parameters', async () => {
       const mockClient = {
         client: {
           rawRequest: vi.fn().mockResolvedValue({
@@ -182,7 +182,7 @@ describe('Linear GraphQL Query Filter Arguments', () => {
 
       vi.spyOn(linearClient, 'getClient').mockResolvedValue(mockClient as any);
 
-      // configServiceのモック
+      // Mock configService
       const { configService } = await import('../config');
       vi.spyOn(configService, 'getConfig').mockResolvedValue({
         apiToken: 'test-token',
@@ -202,14 +202,14 @@ describe('Linear GraphQL Query Filter Arguments', () => {
   });
 });
 
-// パラメータ検証用のヘルパー関数を別途エクスポート
+// Export helper function for parameter validation
 export const validateGraphQLParameters = (
   queryString: string,
   variables: Record<string, any>,
 ): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
 
-  // クエリ文字列からパラメータを抽出
+  // Extract parameters from query string
   const match = queryString.match(/query\s+\w+\s*\(([^)]+)\)/);
   if (!match) {
     return { valid: true, errors: [] };
@@ -218,7 +218,7 @@ export const validateGraphQLParameters = (
   const params = match[1];
   const requiredParams: string[] = [];
 
-  // 必須パラメータを解析
+  // Parse required parameters
   params.split(',').forEach((param) => {
     const paramMatch = param.trim().match(/\$(\w+):\s*([^,\s]+)(!)?/);
     if (paramMatch) {
@@ -229,16 +229,16 @@ export const validateGraphQLParameters = (
     }
   });
 
-  // 必須パラメータの存在チェック
+  // Check existence of required parameters
   requiredParams.forEach((param) => {
     if (!(param in variables)) {
-      errors.push(`必須パラメータ '${param}' が提供されていません`);
+      errors.push(`Required parameter '${param}' is not provided`);
     }
   });
 
-  // filterがある場合、includeArchivedも必須
+  // If filter exists, includeArchived is also required
   if ('filter' in variables && !('includeArchived' in variables)) {
-    errors.push('filterパラメータが提供されている場合、includeArchivedパラメータも必須です');
+    errors.push('When filter parameter is provided, includeArchived parameter is also required');
   }
 
   return {

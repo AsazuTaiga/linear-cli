@@ -8,156 +8,156 @@
 </div>
 
 <div align="center">
-  <h3>⚡ 高速でインタラクティブなLinear Issue管理ツール</h3>
-  <p>ターミナルから離れることなく、Linear Issueを素早く確認・管理</p>
+  <h3>⚡ Fast and Interactive Linear Issue Management Tool</h3>
+  <p>Quickly view and manage Linear issues without leaving your terminal</p>
 </div>
 
 ---
 
-## ✨ 特徴
+## ✨ Features
 
-### 🎯 **直感的なインターフェース**
-- **インタラクティブなメニュー** - 矢印キーで簡単ナビゲーション
-- **スマートなリスト表示** - 優先度とステータスで自動整列
-- **仮想スクロール** - 大量のIssueもスムーズに表示
+### 🎯 **Intuitive Interface**
+- **Interactive menus** - Easy navigation with arrow keys
+- **Smart list display** - Auto-sorted by priority and status
+- **Virtual scrolling** - Smooth display of large issue lists
 
-### ⚡ **高速な操作**
-- **キーボードショートカット** - `j/k`でスクロール、数字キーでリンクを開く
-- **インテリジェントキャッシュ** - 瞬時の画面遷移
-- **Bun runtime** - 超高速な起動と実行
+### ⚡ **Fast Operations**
+- **Keyboard shortcuts** - `j/k` to scroll, number keys to open links
+- **Intelligent caching** - Instant screen transitions
+- **Bun runtime** - Ultra-fast startup and execution
 
-### 🔗 **シームレスな統合**
-- **GitHub連携** - PR情報を自動表示
-- **クリップボードサポート** - Issue情報をワンタッチでコピー
-- **ブラウザ連携** - IssueやPRを素早く開く
+### 🔗 **Seamless Integration**
+- **GitHub integration** - Auto-display PR information
+- **Clipboard support** - One-touch copy of issue info
+- **Browser integration** - Quickly open issues and PRs
 
-## 📸 スクリーンショット
+## 📸 Screenshot
 
 ```
-📋 自分のIssue（Sprint 23）(5件)
-↑↓で選択、Enterで詳細表示、qまたはEscで戻る
+📋 My Issues (Sprint 23) (5 items)
+Use ↑↓ to select, Enter to view details, q or Esc to go back
 
-❯ AME-1234  ⬤ High        APIエンドポイントの実装
-  AME-1235  ⬤ Medium      ドキュメントの更新
-  AME-1236  ⬤ Low         テストケースの追加
+❯ AME-1234  ⬤ High        Implement API endpoints
+  AME-1235  ⬤ Medium      Update documentation
+  AME-1236  ⬤ Low         Add test cases
 ```
 
-## 🚀 クイックスタート
+## 🚀 Quick Start
 
-### 必要要件
+### Requirements
 - [Bun](https://bun.sh) >= 1.0.0
-- Linear APIトークン（[取得方法](https://developers.linear.app/docs/graphql/working-with-the-graphql-api#personal-api-keys)）
+- Linear API token ([How to get](https://developers.linear.app/docs/graphql/working-with-the-graphql-api#personal-api-keys))
 
-### インストール
+### Installation
 
 ```bash
-# リポジトリをクローン
+# Clone repository
 git clone https://github.com/yourusername/linear-cli.git
 cd linear-cli
 
-# 依存関係をインストール
+# Install dependencies
 bun install
 
-# ビルド & グローバルインストール
+# Build & global install
 bun run link-local
 ```
 
-### 初期設定
+### Initial Setup
 
 ```bash
-# APIトークンを設定
-linear config set-token
+# Set API token
+linear config set-token <your-token>
 
-# デフォルトチームを設定（オプション）
+# Set default team (optional)
 linear config set-team
 ```
 
-## 📖 使い方
+## 📖 Usage
 
-### 基本コマンド
+### Basic Commands
 
 ```bash
-# メインメニューを表示（デフォルト: 自分の現在のサイクルIssue）
+# Show main menu (default: my current cycle issues)
 linear
 
-# 自分の現在のサイクルのIssue
+# My current cycle issues
 linear mine
 
-# 自分のすべてのIssue
+# All my issues
 linear mine-all
 
-# チーム全体の現在のサイクルIssue
+# Team's current cycle issues
 linear cycle
 ```
 
-### キーボードショートカット
+### Keyboard Shortcuts
 
-#### リスト画面
-| キー | 動作 |
+#### List View
+| Key | Action |
 |------|------|
-| `↑` / `k` | 上に移動 |
-| `↓` / `j` | 下に移動 |
-| `Enter` | 詳細を表示 |
-| `q` / `Esc` | 戻る / 終了 |
+| `↑` / `k` | Move up |
+| `↓` / `j` | Move down |
+| `Enter` | Show details |
+| `q` / `Esc` | Back / Exit |
 
-#### 詳細画面
-| キー | 動作 |
+#### Detail View
+| Key | Action |
 |------|------|
-| `↑` / `k` | 上にスクロール |
-| `↓` / `j` | 下にスクロール |
-| `1-9` | 対応するリンクを開く |
-| `c` | Issue情報をクリップボードにコピー |
-| `q` / `Esc` | リストに戻る |
+| `↑` / `k` | Scroll up |
+| `↓` / `j` | Scroll down |
+| `1-9` | Open corresponding link |
+| `c` | Copy issue info to clipboard |
+| `q` / `Esc` | Back to list |
 
-## 🛠️ 開発
+## 🛠️ Development
 
-### 開発環境セットアップ
+### Development Environment Setup
 
 ```bash
-# 開発モード（ホットリロード付き）
+# Development mode (with hot reload)
 bun run dev
 
-# 型チェック
+# Type check
 bun run typecheck
 
-# ビルド
+# Build
 bun run build
 
-# テスト
+# Test
 bun run test
 ```
 
-### プロジェクト構成
+### Project Structure
 
 ```
 src/
-├── cli.tsx              # エントリーポイント
-├── components/          # UIコンポーネント
-│   ├── App.tsx         # メイン画面管理
-│   ├── MyIssues.tsx    # 自分のIssue一覧
-│   ├── CycleIssues.tsx # サイクルIssue一覧
-│   └── IssueDetail.tsx # Issue詳細表示
-├── services/           # ビジネスロジック
-│   ├── linear.ts       # Linear API連携
-│   └── config.ts       # 設定管理
-└── utils/              # ユーティリティ
-    ├── format.ts       # フォーマッター
-    └── sort.ts         # ソート処理
+├── cli.tsx              # Entry point
+├── components/          # UI components
+│   ├── App.tsx         # Main screen management
+│   ├── MyIssues.tsx    # My issues list
+│   ├── CycleIssues.tsx # Cycle issues list
+│   └── IssueDetail.tsx # Issue detail view
+├── services/           # Business logic
+│   ├── linear.ts       # Linear API integration
+│   └── config.ts       # Config management
+└── utils/              # Utilities
+    ├── format.ts       # Formatters
+    └── sort.ts         # Sort logic
 ```
 
-## 🔧 設定
+## 🔧 Configuration
 
-設定ファイルは `~/.config/configstore/linear-cli.json` に保存されます。
+Configuration file is saved at `~/.config/configstore/linear-cli.json`.
 
-### 利用可能な設定
+### Available Settings
 
-- `linearApiToken` - Linear APIトークン
-- `defaultTeamId` - デフォルトのチームID
-- `defaultProjectId` - デフォルトのプロジェクトID（オプション）
+- `linearApiToken` - Linear API token
+- `defaultTeamId` - Default team ID
+- `defaultProjectId` - Default project ID (optional)
 
-## 🤝 コントリビューション
+## 🤝 Contributing
 
-プルリクエストを歓迎します！大きな変更の場合は、まずIssueを開いて変更内容について議論してください。
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -165,15 +165,15 @@ src/
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 ライセンス
+## 📝 License
 
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
+MIT License - See [LICENSE](LICENSE) file for details.
 
-## 🙏 謝辞
+## 🙏 Acknowledgments
 
-- [Linear](https://linear.app) - 素晴らしいプロジェクト管理ツール
+- [Linear](https://linear.app) - Amazing project management tool
 - [Ink](https://github.com/vadimdemedes/ink) - React for CLIs
-- [Bun](https://bun.sh) - 高速なJavaScriptランタイム
+- [Bun](https://bun.sh) - Fast JavaScript runtime
 
 ---
 

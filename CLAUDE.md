@@ -5,91 +5,91 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-# 開発モード（ホットリロード付き）
+# Development mode (with hot reload)
 bun run dev
 
-# 型チェック・リント・GraphQL検証を実行
+# Run type check, lint, and GraphQL validation
 bun run check
 
-# 個別の検証コマンド
-bun run typecheck        # TypeScript型チェック
-bun run lint             # ESLintによるリント
-bun run validate:graphql # GraphQL APIコール検証
+# Individual validation commands
+bun run typecheck        # TypeScript type check
+bun run lint             # ESLint linting
+bun run validate:graphql # GraphQL API call validation
 
-# テスト
-bun run test           # 単体テスト実行
-bun run test:watch     # ウォッチモードでテスト
-bun run test:coverage  # カバレッジ付きテスト
+# Testing
+bun run test           # Run unit tests
+bun run test:watch     # Test in watch mode
+bun run test:coverage  # Test with coverage
 
-# ビルド・デプロイ
-bun run build    # プロダクションビルド（dist/に出力）
-bun run link-local  # ビルド後、ローカル環境にCLIツールをインストール
-bun run start    # ビルド済みファイルを実行
+# Build & Deploy
+bun run build    # Production build (output to dist/)
+bun run link-local  # Install CLI tool locally after build
+bun run start    # Run built files
 ```
 
 ## Architecture Overview
 
-このプロジェクトはLinear APIと連携するターミナルUIアプリケーションで、React Inkを使用したインタラクティブなCLIツールです。
+This project is a terminal UI application that integrates with Linear API, an interactive CLI tool using React Ink.
 
 ### Core Technologies
-- **Runtime**: Bun（JavaScriptランタイム兼パッケージマネージャー）
-- **UI Framework**: React Ink（ターミナルUI用React）
-- **API Client**: @linear/sdk（Linear公式SDK）
-- **State Management**: React hooks（useState, useEffect）
-- **Configuration**: conf（永続的な設定管理）
+- **Runtime**: Bun (JavaScript runtime and package manager)
+- **UI Framework**: React Ink (React for terminal UI)
+- **API Client**: @linear/sdk (Official Linear SDK)
+- **State Management**: React hooks (useState, useEffect)
+- **Configuration**: conf (Persistent configuration management)
 
 ### Directory Structure & Responsibilities
 
 ```
 src/
-├── cli.tsx              # CLIエントリーポイント、Commander.jsでコマンド定義
-├── commands/            # CLIコマンドの実装
-│   ├── config.tsx       # Linear API設定（トークン、チーム管理）
-│   └── issue.tsx        # Issue表示コマンド（メインUI起動）
-├── components/          # React Inkコンポーネント層
-│   ├── App.tsx         # メインメニュー、ナビゲーション管理
-│   ├── MyIssues.tsx    # 自分のIssue一覧（全て/現在のサイクル）
-│   ├── CycleIssues.tsx # チーム全体のサイクルIssue
-│   └── IssueDetail.tsx # Issue詳細表示
-├── services/           # ビジネスロジック・外部API連携
-│   ├── linear.ts       # Linear API操作、GraphQLクエリ実装
-│   ├── config.ts       # 設定の永続化（APIキー、チーム情報）
-│   ├── cache.ts        # メモリキャッシュ実装（TTL付き）
-│   └── graphql-validator.ts # GraphQLクエリの静的検証
-└── utils/              # 共通ユーティリティ
-    ├── format.ts       # 日付・ステータス・優先度のフォーマット
-    └── sort.ts         # Issue並び替えロジック
+├── cli.tsx              # CLI entry point, command definition with Commander.js
+├── commands/            # CLI command implementations
+│   ├── config.tsx       # Linear API settings (token, team management)
+│   └── issue.tsx        # Issue display command (launch main UI)
+├── components/          # React Ink component layer
+│   ├── App.tsx         # Main menu, navigation management
+│   ├── MyIssues.tsx    # My issues list (all/current cycle)
+│   ├── CycleIssues.tsx # Team-wide cycle issues
+│   └── IssueDetail.tsx # Issue detail display
+├── services/           # Business logic, external API integration
+│   ├── linear.ts       # Linear API operations, GraphQL query implementation
+│   ├── config.ts       # Configuration persistence (API key, team info)
+│   ├── cache.ts        # Memory cache implementation (with TTL)
+│   └── graphql-validator.ts # GraphQL query static validation
+└── utils/              # Common utilities
+    ├── format.ts       # Date, status, priority formatting
+    └── sort.ts         # Issue sorting logic
 ```
 
 ### Key Architectural Patterns
 
 1. **Component Navigation Pattern**
-   - App.tsxが画面遷移を管理（currentView stateで制御）
-   - 各画面コンポーネントはonBack/onSelectコールバックで親と通信
-   - q/Escキーで前の画面に戻る統一されたナビゲーション
+   - App.tsx manages screen transitions (controlled by currentView state)
+   - Each screen component communicates with parent via onBack/onSelect callbacks
+   - Unified navigation with q/Esc keys to go back
 
 2. **API Layer Abstraction**
-   - services/linear.tsがLinear SDKをラップ
-   - GraphQLクエリはlinear.ts内に集約
-   - キャッシュ層（cache.ts）でAPI呼び出しを最適化
+   - services/linear.ts wraps Linear SDK
+   - GraphQL queries are centralized in linear.ts
+   - Cache layer (cache.ts) optimizes API calls
 
 3. **Configuration Management**
-   - confライブラリで~/.config/configstoreに設定保存
-   - APIトークンとチーム情報を永続化
-   - 初回起動時に設定フローを自動表示
+   - Settings saved in ~/.config/configstore using conf library
+   - API token and team info persisted
+   - Auto-display configuration flow on first launch
 
 4. **Error Handling**
-   - API層でエラーをキャッチしてユーザーフレンドリーなメッセージ表示
-   - GraphQL検証でビルド時にクエリの整合性チェック
+   - API layer catches errors and displays user-friendly messages
+   - GraphQL validation checks query consistency at build time
 
 ### Development Considerations
 
-- **日本語対応**: UIメッセージ、コメントは日本語で記述
-- **Bun専用**: Node.jsではなくBunランタイムを前提に開発
-- **React Ink特有の制約**: 通常のReactと異なり、DOM APIは使用不可
-- **ターミナルUI**: キーボード操作のみ、マウス非対応
-- **GraphQL検証**: コード変更後は`bun run validate:graphql`で検証必須
+- **Language**: UI messages and comments in English
+- **Bun-specific**: Developed for Bun runtime, not Node.js
+- **React Ink constraints**: Unlike regular React, DOM APIs not available
+- **Terminal UI**: Keyboard-only operation, no mouse support
+- **GraphQL validation**: Must run `bun run validate:graphql` after code changes
 
 ## Project Management
 
-- IssueはGitHub Issuesで管理
+- Issues are managed in GitHub Issues
