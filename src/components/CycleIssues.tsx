@@ -71,13 +71,13 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
         setCycleName(
           fetchedIssues[0].cycle.name ||
             fetchedIssues[0].cycle.number?.toString() ||
-            '現在のサイクル',
+            'Current Cycle',
         );
       }
 
       setIssues(fetchedIssues);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラー');
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
         <Text color="cyan">
           <Spinner type="dots" />
         </Text>
-        <Text> サイクルのIssue読み込み中...</Text>
+        <Text> Loading cycle issues...</Text>
       </Box>
     );
   }
@@ -97,7 +97,7 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
   if (error) {
     return (
       <Box flexDirection="column">
-        <Text color="red">❌ エラー: {error}</Text>
+        <Text color="red">❌ Error: {error}</Text>
       </Box>
     );
   }
@@ -105,7 +105,7 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
   if (issues.length === 0) {
     return (
       <Box flexDirection="column">
-        <Text>現在のサイクルにIssueはありません</Text>
+        <Text>No issues in the current cycle</Text>
       </Box>
     );
   }
@@ -114,10 +114,10 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
     <Box flexDirection="column">
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          🔄 {cycleName} のIssue一覧 ({issues.length}件)
+          🔄 {cycleName} Issues ({issues.length} items)
         </Text>
       </Box>
-      <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
+      <Text dimColor>Use ↑↓ to select, Enter to view details, q or Esc to go back</Text>
       <Box marginTop={1}>
         <IssueList issues={issues} onSelect={handleIssueSelect} showAssignee={true} />
       </Box>

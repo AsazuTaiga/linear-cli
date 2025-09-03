@@ -62,28 +62,28 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
     setCopyError(null);
 
     try {
-      // Issue内容を整形
+      // Format issue content
       const issueContent = formatIssueForClaude(issue);
 
-      // 一時ファイルを使ってpbcopyに渡す（特殊文字の問題を回避）
+      // Use temporary file to pass to pbcopy (avoid special character issues)
       const safeIdentifier = issue.identifier.replace(/[^a-zA-Z0-9-]/g, '_');
       const tmpFile = `/tmp/linear-issue-${safeIdentifier}.txt`;
       const fs = await import('node:fs/promises');
       await fs.writeFile(tmpFile, issueContent, 'utf-8');
 
-      // pbcopyコマンドでクリップボードにコピー
+      // Copy to clipboard with pbcopy command
       await execAsync(`pbcopy < ${tmpFile}`);
 
-      // 一時ファイルを削除
+      // Delete temporary file
       await fs.unlink(tmpFile);
 
-      // 成功メッセージを表示
+      // Show success message
       setCopied(true);
       setTimeout(() => {
         setCopied(false);
       }, 2000);
     } catch (error) {
-      setCopyError(error instanceof Error ? error.message : '不明なエラー');
+      setCopyError(error instanceof Error ? error.message : 'Unknown error');
       setTimeout(() => {
         setCopyError(null);
       }, 3000);
@@ -94,25 +94,25 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
     try {
       await execAsync(`open "${url}"`);
     } catch (_error) {
-      // エラーは無視（ブラウザが開けない環境の場合）
+      // Ignore error (for environments where browser cannot be opened)
     }
   };
 
   const getAllLinks = () => {
     const links: Array<{ title: string; url: string; type: string }> = [];
 
-    // Linear Issue URLを最初に追加
+    // Add Linear Issue URL first
     links.push({
       title: `${issue.identifier} (Linear)`,
       url: issue.url,
       type: 'linear',
     });
 
-    // Attachmentsを追加（GitHub PRなど）
+    // Add attachments (GitHub PRs, etc.)
     if (issue.attachments?.nodes) {
       issue.attachments.nodes.forEach((attachment) => {
-        let title = attachment.title || 'リンク';
-        // GitHub PRの場合は特別な表記
+        let title = attachment.title || 'Link';
+        // Special notation for GitHub PRs
         if (attachment.sourceType === 'github' && attachment.url.includes('/pull/')) {
           const prMatch = attachment.url.match(/pull\/(\d+)/);
           if (prMatch) {
@@ -135,32 +135,32 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
   const formatIssueForClaude = (issue: Issue): string => {
     const parts = [
       `Linear Issue: ${issue.identifier}`,
-      `タイトル: ${issue.title}`,
-      `ステータス: ${issue.state.name}`,
+      `Title: ${issue.title}`,
+      `Status: ${issue.state.name}`,
     ];
 
     if (issue.assignee) {
-      parts.push(`担当者: ${issue.assignee.displayName}`);
+      parts.push(`Assignee: ${issue.assignee.displayName}`);
     }
 
     if (issue.description) {
-      parts.push('', '詳細:', issue.description);
+      parts.push('', 'Details:', issue.description);
     }
 
     parts.push('', `URL: ${issue.url}`);
-    parts.push('', '---', 'このIssueに関連する作業を行ってください。');
+    parts.push('', '---', 'Please work on tasks related to this issue.');
 
     return parts.join('\n');
   };
 
-  // 表示可能な行数を計算
+  // Calculate displayable line count
   const terminalHeight = stdout.rows || 20;
-  const contentHeight = Math.max(5, terminalHeight - 5); // コマンド行とスクロールインジケーター分の余裕
+  const contentHeight = Math.max(5, terminalHeight - 5); // Margin for command line and scroll indicators
 
-  // 説明文を行単位で分割（簡易的な実装）
+  // Split description text by lines (simple implementation)
   const descriptionLines = issue.description
     ? issue.description.split('\n').flatMap((line) => {
-        const maxWidth = 80; // 一行の最大幅
+        const maxWidth = 80; // Maximum line width
         const lines = [];
         for (let i = 0; i < line.length; i += maxWidth) {
           lines.push(line.slice(i, i + maxWidth));
@@ -169,44 +169,44 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
       })
     : [];
 
-  // コンテンツ全体を構成
+  // Compose entire content
   const allContent = [];
 
-  // ヘッダー情報
+  // Header information
   allContent.push({ type: 'header', content: `${issue.identifier} - ${issue.title}` });
   allContent.push({
     type: 'status',
-    content: `ステータス: ${issue.state.name}${issue.assignee ? ` | 担当者: ${issue.assignee.displayName}` : ''}`,
+    content: `Status: ${issue.state.name}${issue.assignee ? ` | Assignee: ${issue.assignee.displayName}` : ''}`,
   });
 
-  // 説明（空行なしで直接表示）
+  // Description (display directly without blank lines)
   if (descriptionLines.length > 0) {
-    allContent.push({ type: 'label', content: '詳細:' });
+    allContent.push({ type: 'label', content: 'Details:' });
     descriptionLines.forEach((line) => {
       allContent.push({ type: 'description', content: line });
     });
   }
 
-  // リンク（説明がある場合のみ空行を挿入）
+  // Links (insert blank line only if description exists)
   const links = getAllLinks();
   if (links.length > 0) {
     if (descriptionLines.length > 0) {
       allContent.push({ type: 'empty', content: '' });
     }
-    allContent.push({ type: 'label', content: 'リンク:' });
+    allContent.push({ type: 'label', content: 'Links:' });
     links.forEach((link, index) => {
       allContent.push({ type: 'link', content: `[${index + 1}] ${link.title}` });
     });
   }
 
-  // スクロール範囲を計算
+  // Calculate scroll range
   const visibleContent = allContent.slice(scrollOffset, scrollOffset + contentHeight);
   const hasMoreAbove = scrollOffset > 0;
   const hasMoreBelow = scrollOffset + contentHeight < allContent.length;
 
   return (
     <Box flexDirection="column">
-      {hasMoreAbove && <Text dimColor>↑ スクロール可能</Text>}
+      {hasMoreAbove && <Text dimColor>↑ More above</Text>}
 
       {visibleContent.map((item, index) => {
         switch (item.type) {
@@ -251,23 +251,23 @@ export const IssueDetail: React.FC<IssueDetailProps> = ({ issue }) => {
         }
       })}
 
-      {hasMoreBelow && <Text dimColor>↓ スクロール可能</Text>}
+      {hasMoreBelow && <Text dimColor>↓ More below</Text>}
 
       {copied && (
         <Box marginTop={1}>
-          <Text color="green">✓ クリップボードにコピーしました！</Text>
+          <Text color="green">✓ Copied to clipboard!</Text>
         </Box>
       )}
 
       {copyError && (
         <Box marginTop={1}>
-          <Text color="red">エラー: {copyError}</Text>
+          <Text color="red">Error: {copyError}</Text>
         </Box>
       )}
 
       <Box marginTop={1}>
         <Text dimColor>
-          [↑↓/jk] スクロール [1-9] リンクを開く [c] クリップボードにコピー [q/Esc] 戻る
+          [↑↓/jk] Scroll [1-9] Open link [c] Copy to clipboard [q/Esc] Back
         </Text>
       </Box>
     </Box>

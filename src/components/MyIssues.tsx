@@ -79,7 +79,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
 
       setIssues(fetchedIssues);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラー');
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
         <Text color="cyan">
           <Spinner type="dots" />
         </Text>
-        <Text> 自分のIssue読み込み中...</Text>
+        <Text> Loading my issues...</Text>
       </Box>
     );
   }
@@ -99,7 +99,7 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
   if (error) {
     return (
       <Box flexDirection="column">
-        <Text color="red">❌ エラー: {error}</Text>
+        <Text color="red">❌ Error: {error}</Text>
       </Box>
     );
   }
@@ -109,8 +109,8 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
       <Box flexDirection="column">
         <Text>
           {mode === 'current-cycle'
-            ? '現在のサイクルに自分のIssueはありません'
-            : '自分のIssueが見つかりませんでした'}
+            ? 'No issues assigned to me in current cycle'
+            : 'No issues assigned to me'}
         </Text>
       </Box>
     );
@@ -122,12 +122,12 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
         <Text bold color="cyan">
           📋{' '}
           {mode === 'current-cycle'
-            ? `自分のIssue（${cycleName || '現在のサイクル'}）`
-            : '自分のすべてのIssue'}{' '}
-          ({issues.length}件)
+            ? `My Issues (${cycleName || 'Current Cycle'})`
+            : 'All My Issues'}{' '}
+          ({issues.length} items)
         </Text>
       </Box>
-      <Text dimColor>↑↓で選択、Enterで詳細表示、qまたはEscで戻る</Text>
+      <Text dimColor>Use ↑↓ to select, Enter to view details, q or Esc to go back</Text>
       <Box marginTop={1}>
         <IssueList issues={issues} onSelect={handleIssueSelect} />
       </Box>

@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
- * GraphQLクエリ検証スクリプト
- * Linear APIのSA/UAフィルタ引数忘れをチェック
+ * GraphQL query validation script
+ * Check for missing SA/UA filter arguments in Linear API
  */
 
 import { readFile } from 'fs/promises';
@@ -23,7 +23,7 @@ class GraphQLQueryAnalyzer {
     const content = await readFile(filePath, 'utf-8');
     const lines = content.split('\n');
     
-    // GraphQLクエリを検索
+    // Search for GraphQL queries
     const queryRegex = /const query = `([^`]+)`/g;
     let match;
     
@@ -34,32 +34,32 @@ class GraphQLQueryAnalyzer {
       this.validateQuery(filePath, queryString, lineNumber);
     }
     
-    // rawRequest呼び出しを検索
+    // Search for rawRequest calls
     this.validateRawRequestCalls(filePath, content);
   }
 
   private validateQuery(file: string, queryString: string, line: number): void {
-    // クエリ名とパラメータを抽出
+    // Extract query name and parameters
     const queryMatch = queryString.match(/query\s+(\w+)\s*\(([^)]*)\)/);
     if (!queryMatch) return;
     
     const [, queryName, params] = queryMatch;
     
-    // パラメータを解析
+    // Parse parameters
     const hasFilter = params.includes('$filter');
     const hasIncludeArchived = params.includes('$includeArchived');
     
-    // ルール1: filterがある場合、includeArchivedも必須
+    // Rule 1: If filter exists, includeArchived is also required
     if (hasFilter && !hasIncludeArchived) {
       this.errors.push({
         file,
         line,
-        message: `Query "${queryName}": $filterパラメータがありますが、$includeArchivedパラメータが定義されていません`,
+        message: `Query "${queryName}": Has $filter parameter but missing $includeArchived parameter definition`,
         severity: 'error'
       });
     }
     
-    // ルール2: 定義されたパラメータが使用されているか
+    // Rule 2: Check if defined parameters are used
     const paramList = this.extractParameters(params);
     const queryBody = queryString.split('\n').slice(1).join('\n');
     
@@ -69,19 +69,19 @@ class GraphQLQueryAnalyzer {
         this.warnings.push({
           file,
           line,
-          message: `Query "${queryName}": パラメータ "$${param}" が定義されていますが使用されていません`,
+          message: `Query "${queryName}": Parameter "$${param}" is defined but not used`,
           severity: 'warning'
         });
       }
     });
     
-    // ルール3: issuesクエリでincludeArchivedが使用されているか
+    // Rule 3: Check if includeArchived is used in issues query
     if (hasIncludeArchived && queryBody.includes('issues(')) {
       if (!queryBody.includes('includeArchived: $includeArchived')) {
         this.warnings.push({
           file,
           line,
-          message: `Query "${queryName}": $includeArchivedパラメータが定義されていますが、issuesクエリで使用されていません`,
+          message: `Query "${queryName}": $includeArchived parameter is defined but not used in issues query`,
           severity: 'warning'
         });
       }
@@ -103,7 +103,7 @@ class GraphQLQueryAnalyzer {
   private validateRawRequestCalls(file: string, content: string): void {
     const lines = content.split('\n');
     
-    // rawRequest呼び出しを検索
+    // Search for rawRequest calls
     const rawRequestRegex = /\.rawRequest[^(]*\([^,]+,\s*\{([^}]+)\}/g;
     let match;
     
@@ -118,7 +118,7 @@ class GraphQLQueryAnalyzer {
         this.errors.push({
           file,
           line: lineNumber,
-          message: 'rawRequest呼び出しでfilterが渡されていますが、includeArchivedが渡されていません',
+          message: 'rawRequest call has filter but missing includeArchived',
           severity: 'error'
         });
       }
@@ -140,12 +140,12 @@ class GraphQLQueryAnalyzer {
     console.log('🔍 GraphQL Query Validation Report\n');
     
     if (this.errors.length === 0 && this.warnings.length === 0) {
-      console.log('✅ すべてのGraphQLクエリが正しく設定されています！\n');
+      console.log('✅ All GraphQL queries are properly configured!\n');
       return;
     }
     
     if (this.errors.length > 0) {
-      console.log('❌ エラー:');
+      console.log('❌ Errors:');
       this.errors.forEach(error => {
         console.log(`  ${error.file}:${error.line}`);
         console.log(`    ${error.message}\n`);
@@ -153,16 +153,16 @@ class GraphQLQueryAnalyzer {
     }
     
     if (this.warnings.length > 0) {
-      console.log('⚠️  警告:');
+      console.log('⚠️  Warnings:');
       this.warnings.forEach(warning => {
         console.log(`  ${warning.file}:${warning.line}`);
         console.log(`    ${warning.message}\n`);
       });
     }
     
-    console.log('📊 サマリー:');
-    console.log(`  エラー: ${this.errors.length}件`);
-    console.log(`  警告: ${this.warnings.length}件\n`);
+    console.log('📊 Summary:');
+    console.log(`  Errors: ${this.errors.length}`);
+    console.log(`  Warnings: ${this.warnings.length}\n`);
   }
 
   hasErrors(): boolean {
@@ -170,26 +170,26 @@ class GraphQLQueryAnalyzer {
   }
 }
 
-// メイン処理
+// Main process
 async function main() {
   const analyzer = new GraphQLQueryAnalyzer();
   
-  // srcディレクトリを解析
+  // Analyze src directory
   await analyzer.analyzeDirectory('./src');
   
-  // レポートを出力
+  // Output report
   analyzer.printReport();
   
-  // エラーがある場合は非ゼロのexit codeで終了
+  // Exit with non-zero code if there are errors
   if (analyzer.hasErrors()) {
     process.exit(1);
   }
 }
 
-// 実行
+// Execute
 if (import.meta.main) {
   main().catch(error => {
-    console.error('❌ 検証中にエラーが発生しました:', error);
+    console.error('❌ Error occurred during validation:', error);
     process.exit(1);
   });
 }

@@ -163,7 +163,7 @@ class LinearService {
 
     const graphQLClient: LinearGraphQLClient = client.client;
 
-    // GraphQLパラメータの検証
+    // Validate GraphQL parameters
     const variables = applyLinearDefaults({ filter });
     GraphQLQueryValidator.validate({
       queryName: 'GetIssues',
@@ -290,7 +290,7 @@ class LinearService {
 
     const graphQLClient: LinearGraphQLClient = client.client;
 
-    // GraphQLパラメータの検証
+    // Validate GraphQL parameters
     const variables = applyLinearDefaults({ filter });
     GraphQLQueryValidator.validate({
       queryName: 'GetMyIssues',
@@ -327,7 +327,7 @@ class LinearService {
     const config = await configService.getConfig();
     const teamId = config.defaultTeamId;
 
-    // 現在の日付を取得
+    // Get current date
     const _now = new Date();
 
     let cycle: Cycle | null = null;
@@ -335,7 +335,7 @@ class LinearService {
       const teams = await client.teams();
       if (teams.nodes.length > 0) {
         const team = teams.nodes[0];
-        // activeCycleを使用
+        // Use activeCycle
         const activeCycle = await team.activeCycle;
         if (activeCycle) {
           cycle = {
@@ -355,7 +355,7 @@ class LinearService {
       }
     } else {
       const team = await client.team(teamId);
-      // activeCycleを使用
+      // Use activeCycle
       const activeCycle = await team.activeCycle;
       if (activeCycle) {
         cycle = {
@@ -375,7 +375,7 @@ class LinearService {
     }
 
     if (cycle) {
-      cacheService.set(cacheKey, cycle, 10 * 60 * 1000); // 10分キャッシュ
+      cacheService.set(cacheKey, cycle, 10 * 60 * 1000); // Cache for 10 minutes
     }
     return cycle;
   }
@@ -444,7 +444,7 @@ class LinearService {
 
     const graphQLClient: LinearGraphQLClient = client.client;
 
-    // GraphQLパラメータの検証
+    // Validate GraphQL parameters
     const variables = applyLinearDefaults({
       filter: {
         cycle: { id: { eq: currentCycle.id } },
