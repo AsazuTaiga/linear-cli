@@ -98,7 +98,6 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
     return (
       <Box flexDirection="column">
         <Text color="red">❌ エラー: {error}</Text>
-        <Text dimColor>qまたはEscで戻る</Text>
       </Box>
     );
   }
@@ -112,7 +111,6 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
             ? '現在のサイクルに自分のIssueはありません' 
             : '自分のIssueが見つかりませんでした'}
         </Text>
-        <Text dimColor>qまたはEscで戻る</Text>
       </Box>
     );
   }

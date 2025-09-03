@@ -1,5 +1,5 @@
-import React, { useReducer } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import React, { useReducer, useEffect } from 'react';
+import { Box, Text, useInput, useApp, useStdout } from 'ink';
 import SelectInput from 'ink-select-input';
 import { MyIssues } from './MyIssues.js';
 import { CycleIssues } from './CycleIssues.js';
@@ -37,11 +37,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
         selectedIssue: action.issue
       };
     case 'GO_BACK':
-      if (state.previousView) {
+      if (state.currentView === 'issue-detail' && state.previousView) {
+        // Issue詳細から前の一覧画面に戻る
         return {
           ...state,
           currentView: state.previousView,
-          previousView: state.previousView === 'menu' ? null : 'menu',
+          previousView: 'menu',
+          selectedIssue: null
+        };
+      } else if (state.currentView !== 'menu') {
+        // Issue一覧からメニューに戻る
+        return {
+          ...state,
+          currentView: 'menu',
+          previousView: null,
           selectedIssue: null
         };
       }
@@ -53,11 +62,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   const { exit } = useApp();
+  const { write } = useStdout();
   const [state, dispatch] = useReducer(appReducer, {
     currentView: defaultView as ViewType,
     previousView: 'menu',
     selectedIssue: null
   });
+
+  // 画面遷移時にクリア
+  useEffect(() => {
+    // 画面が切り替わった時に必ずクリア
+    write('\x1b[2J\x1b[H');
+  }, [state.currentView, write]);
 
   useInput((input, key) => {
     if (input === 'q' || key.escape) {
@@ -99,7 +115,7 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
   };
 
   return (
-    <Box flexDirection="column" paddingY={1}>
+    <Box flexDirection="column" paddingY={1} minHeight={20}>
       <Box marginBottom={1}>
         <Text bold color="cyan">
           🚀 Linear CLI

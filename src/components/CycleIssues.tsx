@@ -94,7 +94,6 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
     return (
       <Box flexDirection="column">
         <Text color="red">❌ エラー: {error}</Text>
-        <Text dimColor>qまたはEscで戻る</Text>
       </Box>
     );
   }
@@ -104,7 +103,6 @@ export const CycleIssues: React.FC<CycleIssuesProps> = ({ onSelectIssue }) => {
     return (
       <Box flexDirection="column">
         <Text>現在のサイクルにIssueはありません</Text>
-        <Text dimColor>qまたはEscで戻る</Text>
       </Box>
     );
   }
