@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            artifact: linear-linux-x64
+          - os: macos-latest
+            target: darwin-x64
+            artifact: linear-macos-x64
+          - os: macos-latest
+            target: darwin-arm64
+            artifact: linear-macos-arm64
+          - os: windows-latest
+            target: windows-x64
+            artifact: linear-windows-x64.exe
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+    
+    - name: Install dependencies
+      run: bun install
+    
+    - name: Build
+      run: bun run build
+    
+    - name: Compile binary
+      run: |
+        bun build ./dist/linear.js --compile --target=${{ matrix.target }} --outfile=./dist/${{ matrix.artifact }}
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.artifact }}
+        path: ./dist/${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./artifacts/**/*
+        generate_release_notes: true
+        body: |
+          ## Installation
+          
+          ### macOS (Apple Silicon)
+          ```bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/linear-macos-arm64 -o linear
+          chmod +x linear
+          sudo mv linear /usr/local/bin/
+          ```
+          
+          ### macOS (Intel)
+          ```bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/linear-macos-x64 -o linear
+          chmod +x linear
+          sudo mv linear /usr/local/bin/
+          ```
+          
+          ### Linux
+          ```bash
+          curl -L https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/linear-linux-x64 -o linear
+          chmod +x linear
+          sudo mv linear /usr/local/bin/
+          ```
+          
+          ### Windows
+          Download `linear-windows-x64.exe` and add it to your PATH.
+          
+          ## Configuration
+          
+          After installation, configure your Linear API token:
+          ```bash
+          linear config set-token YOUR_API_TOKEN
+          ```

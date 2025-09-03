@@ -37,6 +37,7 @@
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",
     "@vitest/coverage-v8": "^2.1.8",
+    "ink-testing-library": "^4.0.0",
     "react-devtools-core": "^6.1.5",
     "typescript": "^5.5.4",
     "vitest": "^2.1.8"
