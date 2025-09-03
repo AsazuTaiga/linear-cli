@@ -2,15 +2,17 @@ import { Box, Text, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import type React from 'react';
 import { useReducer } from 'react';
+import { CreateIssue } from './CreateIssue.js';
 import { CycleIssues } from './CycleIssues.js';
 import { IssueDetail } from './IssueDetail.js';
 import { MyIssues } from './MyIssues.js';
+import { SearchIssues } from './SearchIssues.js';
 
 interface AppProps {
-  defaultView?: 'mine' | 'mine-all' | 'cycle';
+  defaultView?: 'mine' | 'mine-all' | 'cycle' | 'create-issue' | 'search';
 }
 
-type ViewType = 'menu' | 'mine' | 'mine-all' | 'cycle' | 'issue-detail';
+type ViewType = 'menu' | 'mine' | 'mine-all' | 'cycle' | 'issue-detail' | 'create-issue' | 'search';
 
 interface AppState {
   currentView: ViewType;
@@ -79,6 +81,8 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
         case 'mine':
         case 'mine-all':
         case 'cycle':
+        case 'create-issue':
+        case 'search':
           dispatch({ type: 'GO_BACK' });
           break;
       }
@@ -89,6 +93,8 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
     { label: '📋 My Issues (Current Cycle)', value: 'mine' },
     { label: '📁 All My Issues', value: 'mine-all' },
     { label: '🔄 Team Cycle Issues', value: 'cycle' },
+    { label: '🔍 Search Issues', value: 'search' },
+    { label: '➕ Create New Issue', value: 'create-issue' },
     { label: '🚪 Exit', value: 'exit' },
   ];
 
@@ -136,6 +142,21 @@ export const App: React.FC<AppProps> = ({ defaultView = 'mine' }) => {
 
       {state.currentView === 'issue-detail' && state.selectedIssue && (
         <IssueDetail issue={state.selectedIssue} />
+      )}
+
+      {state.currentView === 'create-issue' && (
+        <CreateIssue
+          onComplete={() => {
+            dispatch({ type: 'SHOW_MENU' });
+          }}
+          onCancel={() => {
+            dispatch({ type: 'GO_BACK' });
+          }}
+        />
+      )}
+
+      {state.currentView === 'search' && (
+        <SearchIssues onSelectIssue={(issue) => handleIssueSelect(issue, 'search')} />
       )}
     </Box>
   );

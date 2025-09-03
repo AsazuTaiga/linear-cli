@@ -186,6 +186,7 @@ class LinearService {
   async createIssue(data: {
     title: string;
     description?: string;
+    priority?: number;
     projectId?: string;
     teamId?: string;
   }) {
@@ -204,6 +205,7 @@ class LinearService {
     return await client.createIssue({
       title: data.title,
       description: data.description,
+      priority: data.priority,
       projectId: data.projectId || config.defaultProjectId,
       teamId,
     });
