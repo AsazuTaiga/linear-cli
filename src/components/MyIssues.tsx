@@ -1,4 +1,4 @@
-import { Box, Text } from 'ink';
+import { Box, Static, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -117,16 +117,22 @@ export const MyIssues: React.FC<MyIssuesProps> = ({ mode, onSelectIssue }) => {
 
   return (
     <Box flexDirection="column">
-      <Box marginBottom={1}>
-        <Text bold color="cyan">
-          📋{' '}
-          {mode === 'current-cycle'
-            ? `My Issues (${cycleName || 'Current Cycle'})`
-            : 'All My Issues'}{' '}
-          ({issues.length} items)
-        </Text>
-      </Box>
-      <Text dimColor>Use ↑↓ to select, Enter to view details, q or Esc to go back</Text>
+      <Static items={[{ key: 'header' }]}>
+        {(item) => (
+          <Box key={item.key} flexDirection="column">
+            <Box marginBottom={1}>
+              <Text bold color="cyan">
+                📋{' '}
+                {mode === 'current-cycle'
+                  ? `My Issues (${cycleName || 'Current Cycle'})`
+                  : 'All My Issues'}{' '}
+                ({issues.length} items)
+              </Text>
+            </Box>
+            <Text dimColor>Use ↑↓ to select, Enter to view details, q or Esc to go back</Text>
+          </Box>
+        )}
+      </Static>
       <Box marginTop={1}>
         <IssueList issues={issues} onSelect={handleIssueSelect} />
       </Box>
